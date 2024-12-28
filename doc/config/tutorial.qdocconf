@@ -1,0 +1,75 @@
+# QDoc is a tool that constantly evolves and there may be compatibility issues
+# between old and new practices. For that reason, QDoc configuration files in
+# the Qt Project includes compat.qdocconf:
+#include(compat.qdocconf)
+
+# Give the documentation project a title:
+project = Felgo 8 Ball Pool Tutorial
+
+# QDoc needs a lists of file extensions to know which files to process in
+# different situations. Uncomment the following include statement to get
+# a pre-defined list of file extensions.
+#include(fileextensions.qdocconf)
+
+# You can also specify file extensions manually.
+headers.fileextensions  = "*.h *.hpp"
+sources.fileextensions  = "*.cpp *.qml *.qdoc"
+
+# The outputdir variable specifies the directory where QDoc places the generated
+# documentation.
+outputdir   = ../html
+
+# The headerdirs variable specifies the directories that contain the header
+# files associated with the .cpp source files used in the documentation.
+headerdirs  = ..
+
+# The sourcedirs variable specifies the directories that contain the .cpp or
+# .qdoc files used in the documentation.
+sourcedirs  = ..
+
+# The exampledirs variable specifies the directories that contain the source
+# code of the example files.
+exampledirs = ../examples
+
+# The imagedirs variable specifies the directories that contain images used in
+# the documentation.
+imagedirs   = ../img
+
+# path to the CSS files if you would like to use any (here it's the current directory)
+HTML.stylesheets = ../style/offline.css
+
+# the string that actually includes the CSS into documentation file
+HTML.headerstyles = "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\"/>\n"
+
+HTML.endheader = \
+    "</head>\n"
+
+HTML.postheader = \
+    "<body>\n" \
+    "<div class=\"header\" id=\"qtdocheader\">\n"\
+    "    <div class=\"main\">\n" \
+
+
+
+HTML.postpostheader = \
+    "<div class=\"content\">\n" \
+    "<div class=\"line\">\n" \
+    "<div class=\"content mainContent\">\n" \
+	
+	
+HTML.footer = \
+    "        </div>\n" \
+    "       </div>\n" \
+    "   </div>\n" \
+    "   </div>\n" \
+    "</div>\n" \
+
+
+# what format to use for generating documentation
+outputformats = HTML
+
+# Set a warning limit. QDoc will exit with a non-zero exit code if it generates
+# documentation warnings during the documentation build. Useful for tracking
+# down documentation issues.
+#warninglimit = 0
+#warninglimit.enabled = true

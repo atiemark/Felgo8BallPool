@@ -93,11 +93,11 @@ EntityBase {
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.verticalCenter: parent.verticalCenter
 
-      friction: 0.3
-      restitution: 0.8 // restitution is bounciness
+      friction: 0
+      restitution: 1 // restitution is bounciness
       density: ballEntity.density*2 // this makes the ball more heavy
-      angularDamping: 0.9
-      linearDamping: 0.9
+      angularDamping: 1.5
+      linearDamping: 1.5
 
       fixture.onBeginContact: (other, contactNormal) => {
                                   // when colliding with another entity, play the sound and start particleEffect
@@ -106,13 +106,9 @@ EntityBase {
                               }
   }
 
-  // the soundEffect is played at a collision
-   GameSoundEffect {
-     id: collisionSound
-     source: Qt.resolvedUrl("../../assets/snd/boxCollision.wav")
-   }
 
-    function applyLinearImpulse(impulseVector, worldPoint) {
+    function applyLinearImpulse(impulseVector, worldPoint)
+    {
       circleCollider.applyLinearImpulse(impulseVector, worldPoint)
     }
 }

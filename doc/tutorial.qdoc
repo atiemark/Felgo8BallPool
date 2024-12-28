@@ -1,0 +1,274 @@
+/*!
+    \page Introduction-and-Setup.html
+    \title Felgo Challenge - 8 Ball Pool Game - Introduction
+
+    \brief Introduction
+
+    \br
+\   \br
+    This is the tutorial on how to recreate the "Felgo8BallPool" game, as requested by the Felgo developer challenge.
+    \br
+
+    \section1 Tutorial contents
+
+
+\div
+    \list
+        \li - \l {Introduction-and-Setup.html} {Introduction and Setup}
+        \li - \l {Creating-the-balls.html} {Creating the balls}
+        \li - \l {Ball-placement.html} {Ball placement}
+        \li - \l {Creating-the-Stick.html} {Creating the Stick}
+        \li - \l {Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
+        \li - \l {Adding-the-pockets.html} {Adding the pockets}
+        \li - \l {Adding-game-logic-and-display-text.html} {Adding game logic and display text}
+        \li - \l {Adding-a-Raycast-to-help-aiming.html} {Adding a Raycast (to help aiming)}
+    \endlist
+\enddiv
+
+    \section1 Introduction
+
+    \section2 Real world 8-Ball
+    Eight-ball (also spelled 8-ball or eightball) is a discipline of pool played on a billiard table with six pockets, cue sticks, and sixteen billiard balls (a cue ball and fifteen object balls).
+    The object balls include seven solid-colored balls numbered 1 through 7, seven striped balls numbered 9 through 15, and the black 8 ball.
+    After the balls are scattered with a break shot, a player is assigned either the group of solid or striped balls once they have legally pocketed a ball from that group.
+
+    \image Eight_Ball_Rack_2005_SeanMcClean.jpg
+
+    The object of the game is to legally pocket the 8-ball in a "called" pocket, which can only be done after all of the balls from a player's assigned group have been cleared from the table.
+    The game is the most frequently played discipline of pool, and is often thought of as synonymous with "pool". The game has numerous variations, mostly regional.
+    It is the second most played professional pool game, after nine-ball, and for the last several decades ahead of straight pool.
+
+    \l {https://en.wikipedia.org/wiki/Eight-ball}
+
+    \section2 2D game simulation
+
+    Computer game versions of 8 ball or pool usually feature a birds eye view and feature mouse controls for the cue stick.
+    Additionally it is possible to give a spin to the white "cue ball" to shoot in curves for complex turns.
+    As shown below, a classic miniclip pool online game, which could serve as an example:
+
+    \image image18.png
+    \caption Screenshot from a "8 Ball Pool" game on \l {https://8ballpool.com/en/game}
+
+
+    \section1 Setting up the project
+
+    Our aim is to recreate a simpler version of the original, famous american style 8 ball pool usind Felgo and the 2D physics engine!
+    \br\br
+    We start by creating a new poject from the Qt Creator Welcome page and choose \b{"Physics - Stack The Box"}.
+
+    \image image17.png
+
+
+    We give a custom name and directory. For this project I used the \b{"Felgo SDK Desktop Qt 6.4.1 MinGW 64-bit"} Kit.
+    We also set the \b{app display name, app identifier} and use a \b{landscape orientation}. Everything else should be good to go by default.
+\br
+    When starting the app, we should now see the included "Stack the Box" demo running, with smoking boxes flying down from the sky, colliding with the walls.
+
+\image image19.png
+
+    \section2 Adoption of existing "Physics - Stack The Box" project
+
+    For our game, we only need the walls for now (which then will be adapted to feature pockets later \l {Adding-the-pockets.html} {here}).
+\br
+We can therefore go to our main qml file \c{qml/Main.qml} in the Project side bar:
+\image image20.png
+
+(which is set as the main qml file via \c{felgo.setMainQmlFileName(QStringLiteral("qml/Main.qml"));} in \c{main.cpp}) and \b{remove} the black background:
+
+\qml
+    Rectangle {
+        anchors.fill: parent
+        color: "black"
+    }
+\endqml
+
+from inside \c{GameWindow} as we will add our own green background later. Then \b{remove the following components}:
+
+- We will create our own game status text:
+\qml
+        Text {
+            text: "Boxes: " + scene.createdBoxes
+            color: "white"
+            z: 1 // put on top of everything else in the Scene
+            //...
+        }
+\endqml
+
+
+-We dont need any mouse control to move the boxes:
+\qml
+        Component {
+            id: mouseJoint
+            //...
+        }
+\endqml
+
+
+- No mouse area is needed yet, awe will add our own one one later:
+\qml
+        MouseArea {
+        //...
+        }
+\endqml
+
+- No boxes in our game!
+
+\qml
+        Box {
+            //...
+        }
+\endqml
+
+
+- And lastly we remove the blue toggle buttons:
+\qml
+        // for toggling audio and particles
+        Column {
+           //...
+        }
+\endqml
+
+We should now end up with just the walls:
+
+\image image21.png
+
+Because we dont need any boxes or smoke in our pool game, we can also remove the files \c{qml/entities/Box.qml} and \c{qml/entities/SmokeParticle.json}
+
+\image image22.png
+
+Now, before we create the balls for our game in the next chapter, we set up a few properties which define the scale of our game for later.
+Those properties can be adjusted to fit different table-, pocket-, wall- and ball sizes in millimeter later.
+
+
+    \qml
+        id: scene
+        width: 1280
+        property int fieldWidthMillimeter: 2240
+        property int fieldHeightMillimeter: 1120
+        property int pocketHoleDiameterMillimeter: 130
+        property int wallHeightMillimeter: 60
+        property int tableEdgeMillimeter: 60
+
+        height: width * (fieldHeightMillimeter / fieldWidthMillimeter)
+
+        property int ballDiameterMillimeter: 60
+        property int ballWeightGrams: 160
+        property int playBallTriangleNumRows: 5
+
+        property real ballDiameter: width / (fieldWidthMillimeter / ballDiameterMillimeter)
+        property real ballDensity: ballWeightGrams / (Math.pow(ballDiameter/2, 2) * Math.PI)    //density is in kg/pixel^2 - area of ball is (d/2)^2 * PI
+        property real wallHeight:  width / (fieldWidthMillimeter / wallHeightMillimeter)
+        property real pocketSizeDiameter: width / (fieldWidthMillimeter / pocketHoleDiameterMillimeter)
+        property real tableEdge: width / (fieldWidthMillimeter / tableEdgeMillimeter)
+
+        property var ballPositions: []
+        property var whiteBall
+
+        //...
+}
+    \endqml
+
+The properties \c{ballDiameter, ballDensity, wallHeight, pocketSizeDiameter, ...} are then automativally calculated on startup. We give our game scene a standard \c{width} of \c{1280} pixels.
+
+
+*/
+
+
+
+/*!
+    \page Creating-the-balls.html
+    \title Creating the balls
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/
+
+/*!
+    \page Ball-placement.html
+    \title Ball placement
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/
+
+/*!
+    \page Creating-the-Stick.html
+    \title Creating the Stick
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/
+
+/*!
+    \page Placing-the-Stick-and-adding-control.html
+    \title Placing the Stick and adding control
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/
+
+/*!
+    \page Adding-the-pockets.html
+    \title Adding the pockets
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/
+
+/*!
+    \page Adding-game-logic-and-display-text.html
+    \title Adding game logic and display text
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/
+
+/*!
+    \page Adding-a-Raycast-to-help-aiming.html
+    \title Adding a Raycast to help aiming
+
+    \div {class="main-rounded"}
+        \div {div class="navigationbar"}
+            \list
+            \l {Introduction-and-Setup.html} {Back to Start}
+            \endlist
+        \enddiv
+    \enddiv
+
+*/

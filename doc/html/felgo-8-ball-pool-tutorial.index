@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE QDOCINDEX>
+<INDEX url="" title="Felgo 8 Ball Pool Tutorial Reference Documentation" version="" project="Felgo 8 Ball Pool Tutorial">
+    <namespace name="" status="active" access="public" module="felgo 8 ball pool tutorial">
+        <page name="Adding-a-Raycast-to-help-aiming.html" href="adding-a-raycast-to-help-aiming.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="262" documented="true" subtype="page" title="Adding a Raycast to help aiming" fulltitle="Adding a Raycast to help aiming" subtitle=""/>
+        <page name="Adding-game-logic-and-display-text.html" href="adding-game-logic-and-display-text.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="248" documented="true" subtype="page" title="Adding game logic and display text" fulltitle="Adding game logic and display text" subtitle=""/>
+        <page name="Adding-the-pockets.html" href="adding-the-pockets.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="234" documented="true" subtype="page" title="Adding the pockets" fulltitle="Adding the pockets" subtitle=""/>
+        <page name="Ball-placement.html" href="ball-placement.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="192" documented="true" subtype="page" title="Ball placement" fulltitle="Ball placement" subtitle=""/>
+        <page name="Creating-the-Stick.html" href="creating-the-stick.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="206" documented="true" subtype="page" title="Creating the Stick" fulltitle="Creating the Stick" subtitle=""/>
+        <page name="Creating-the-balls.html" href="creating-the-balls.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="178" documented="true" subtype="page" title="Creating the balls" fulltitle="Creating the balls" subtitle=""/>
+        <page name="Introduction-and-Setup.html" href="introduction-and-setup.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="1" documented="true" subtype="page" title="Felgo Challenge - 8 Ball Pool Game - Introduction" fulltitle="Felgo Challenge - 8 Ball Pool Game - Introduction" subtitle="" brief="Introduction">
+            <contents name="tutorial-contents" title="Tutorial contents" level="1"/>
+            <contents name="introduction" title="Introduction" level="1"/>
+            <contents name="real-world-8-ball" title="Real world 8-Ball" level="2"/>
+            <contents name="2d-game-simulation" title="2D game simulation" level="2"/>
+            <contents name="setting-up-the-project" title="Setting up the project" level="1"/>
+            <contents name="adoption-of-existing-physics-stack-the-box-project" title="Adoption of existing &quot;Physics - Stack The Box&quot; project" level="2"/>
+        </page>
+        <page name="Placing-the-Stick-and-adding-control.html" href="placing-the-stick-and-adding-control.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="220" documented="true" subtype="page" title="Placing the Stick and adding control" fulltitle="Placing the Stick and adding control" subtitle=""/>
+    </namespace>
+</INDEX>

@@ -26,8 +26,8 @@ GameWindow {
 
             onVisibleChanged:
             {
-                gameOverText.text = "Game Over! - Final Score:\nPlayer 1 (Solid Balls 1-7):\n" + gameWindow.playerScore[0] + "\n" +
-                           "Player 2 (Striped Balls 9-15):\n" + gameWindow.playerScore[1]
+                gameOverText.text = "Game Over! - Final Score:\nScored Solid Balls (1-7):\n" + gameWindow.playerScore[0] + "\n" +
+                        "Scored Striped Balls (9-15):\n" + gameWindow.playerScore[1]
             }
 
             Text {
@@ -46,7 +46,6 @@ GameWindow {
                 {
                     scene.ballPositions = []
                     gameWindow.playerScore = [0, 0]
-                    scene.curPlayer = 1
                     scene.whiteBall = null
                     scene.placeBalls()
                     gameOverScene.enabled = false
@@ -63,8 +62,6 @@ GameWindow {
     Scene {
         id: scene
         width: 1280
-
-        //MAR: add the 8 ball playfield and ball dimensions in millimeters for later scaling
         property int fieldWidthMillimeter: 2240
         property int fieldHeightMillimeter: 1120
         property int pocketHoleDiameterMillimeter: 130
@@ -82,69 +79,49 @@ GameWindow {
         property real wallHeight:  width / (fieldWidthMillimeter / wallHeightMillimeter)
         property real pocketSizeDiameter: width / (fieldWidthMillimeter / pocketHoleDiameterMillimeter)
         property real tableEdge: width / (fieldWidthMillimeter / tableEdgeMillimeter)
+
         property var ballPositions: []
-
-        property int curPlayer: 1
-
         property var whiteBall
 
         Rectangle {
             anchors.fill: parent
             gradient: Gradient {
-                    GradientStop { position: 0.0; color: "darkgreen" }
-                    GradientStop { position: 1.0; color: "#008000" }
-                }
+                GradientStop { position: 0.0; color: "#004000" }
+                GradientStop { position: 1.0; color: "green" }
+            }
             z: -1
         }
 
         Text {
             id: playerOneScoreText
-            text: "    Player 1 (Solid Balls 1-7): " + gameWindow.playerScore[0]
             color: "white"
             font.pixelSize: scene.wallHeight * 0.7
             //anchors.left: parent.left
             anchors.left: topWallOne.left
             z: 200 // put on top of everything else in the Scene
 
-            function updateScore()
+            function updateScore(add)
             {
-                gameWindow.playerScore[0]++
-                playerOneScoreText.text = "    Player 1 (Solid Balls 1-7): " + gameWindow.playerScore[0]
+                gameWindow.playerScore[0] += add
+                playerOneScoreText.text = "    Scored Solid Balls (1-7): " + gameWindow.playerScore[0]
             }
         }
 
 
         Text {
             id: playerTwoScoreText
-            text: "Player 2 (Striped Balls 9-15): " + gameWindow.playerScore[1] + "    "
             color: "white"
             font.pixelSize: scene.wallHeight * 0.7
             anchors.right: topWallTwo.right
             x: -scene.pocketSizeDiameter
             z: 200 // put on top of everything else in the Scene
 
-            function updateScore()
+            function updateScore(add)
             {
-                gameWindow.playerScore[1]++
-                playerTwoScoreText.text = "Player 2 (Striped Balls 9-15): " + gameWindow.playerScore[1] + "    "
+                gameWindow.playerScore[1] += add
+                playerTwoScoreText.text = "Scored Striped Balls (9-15): " + gameWindow.playerScore[1] + "    "
             }
         }
-
-        Text {
-            id: currentPlayerText
-            text: "Current Player: " + scene.curPlayer
-            color: "white"
-            font.pixelSize: scene.wallHeight * 0.7
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: scene.tableEdge/2
-            z: 200 // put on top of everything else in the Scene
-
-            function updatePlayer()
-            {
-                currentPlayerText.text = "Current Player: " + scene.curPlayer
-            }
-        }
-
 
 
         PhysicsWorld {
@@ -172,14 +149,12 @@ GameWindow {
             Rectangle{
                 anchors.fill: parent
                 radius: scene.pocketSizeDiameter/2
-                gradient: Gradient {
-                        GradientStop { position: 0.0; color: "brown" }
-                        GradientStop { position: 1.0; color: "#361B0C" }
-                    }
-
+                gradient: Gradient
+                {
+                    GradientStop { position: 0.0; color: "brown" }
+                    GradientStop { position: 1.0; color: "#361B0C" }
+                }
             }
-
-
         }
 
         Wall {
@@ -188,14 +163,15 @@ GameWindow {
             width: (scene.width / 2) - scene.pocketSizeDiameter * 1.6 - scene.tableEdge
             x: scene.pocketSizeDiameter * 2 + bottomWallOne.width + scene.tableEdge
             y: scene.height - scene.wallHeight - scene.tableEdge
-            Rectangle{
+            Rectangle
+            {
                 anchors.fill: parent
                 radius: scene.pocketSizeDiameter/2
-                gradient: Gradient {
-                        GradientStop { position: 0.0; color: "brown" }
-                        GradientStop { position: 1.0; color: "#361B0C" }
-                    }
-
+                gradient: Gradient
+                {
+                    GradientStop { position: 0.0; color: "brown" }
+                    GradientStop { position: 1.0; color: "#361B0C" }
+                }
             }
         }
 
@@ -206,14 +182,15 @@ GameWindow {
             height: scene.height - scene.pocketSizeDiameter * 1.6 - scene.tableEdge * 2  - scene.wallHeight * 2
             y: scene.pocketSizeDiameter + scene.tableEdge + scene.wallHeight
             x: scene.wallHeight
-            Rectangle{
+            Rectangle
+            {
                 anchors.fill: parent
                 radius: scene.pocketSizeDiameter/2
-                gradient: Gradient {
+                gradient: Gradient
+                {
                     GradientStop { position: 0.0; color: "brown";  }
                     GradientStop { position: 1.0; color: "#361B0C" }
-                    }
-
+                }
             }
         }
 
@@ -229,7 +206,7 @@ GameWindow {
                 gradient: Gradient {
                     GradientStop { position: 0.0; color: "#361B0C" }
                     GradientStop { position: 1.0; color: "brown" }
-                    }
+                }
 
             }
         }
@@ -245,9 +222,9 @@ GameWindow {
                 anchors.fill: parent
                 radius: scene.pocketSizeDiameter/2
                 gradient: Gradient {
-                        GradientStop { position: 0.0; color: "#361B0C" }
-                        GradientStop { position: 1.0; color: "brown" }
-                    }
+                    GradientStop { position: 0.0; color: "#361B0C" }
+                    GradientStop { position: 1.0; color: "brown" }
+                }
 
             }
         }
@@ -264,11 +241,10 @@ GameWindow {
                 gradient: Gradient {
                     GradientStop { position: 0.0; color: "#361B0C" }
                     GradientStop { position: 1.0; color: "brown" }
-                    }
+                }
 
             }
         }
-
 
         Stick
         {
@@ -278,59 +254,36 @@ GameWindow {
             stickDiameter: ballDiameter * 0.6
         }
 
-        Component.onCompleted: {
-            scene.placeBalls()
-        }
 
-         /*
         //show the ray that is being cast as a rectangle
         Rectangle {
             id: rayCastVisRect
-            property real mx: 0
-            property real my: 0
+            transformOrigin: Item.Left
+            visible: false
+            antialiasing: true
 
-            property real len: 2 * Math.sqrt(mx * mx + my * my)
+            property point from
+            property point to
 
-            rotation: 180 / Math.PI * Math.atan2(my, mx)
+            onToChanged: {
+                width = Math.abs(Math.hypot(from.x - to.x, from.y - to.y))
+            }
 
-            transformOrigin: Item.Center
-
-            x: scene.width / 2 - len / 2
-            y: scene.height / 2
-            width: len
-            height: 2
-            color: "red"
-        }
-
-        //highlight the object which is hit by the ray
-        Rectangle {
-            id: rect
-            property Item target: null
-            width: target ? target.width : 0
-            height: target ? target.height : 0
-            x: target ? target.x : 0
-            y: target ? target.y : 0
-            color: "green"
-            opacity: 0.5
-            rotation: target ? target.rotation : 0
-            visible: !!target
-            transformOrigin: Item.TopLeft
+            width: scene.width
+            height: 1
+            color: "white"
         }
 
 
         RayCast {
             id: raycast
-            maxFraction: 2 //cast ray twice the distance from start to end point
+            maxFraction: scene.width
             onFixtureReported: (fixture, contactPoint, contactNormal, fraction) =>
                                {
-                                   //fixture.getBody() returns the body object, body.target returns the entity which contains the body
-                                   var body = fixture.getBody()
-                                   var entity = body.target
-
-                                   rect.target = entity
-                                   maxFraction = 0 // cancel current raycast, report no more objects
+                                   maxFraction = fraction // cancel current raycast, report no more objects
+                                   rayCastVisRect.to = contactPoint
                                }
-        }*/
+        }
 
 
         Timer {
@@ -340,7 +293,6 @@ GameWindow {
             repeat: true // otherwise restart wont work
 
             property int curBallNum: 0
-
 
             onTriggered: {
 
@@ -368,6 +320,7 @@ GameWindow {
                     initTimer.stop()
                     scene.whiteBall = entityManager.getEntityById("whiteBall")
                     playingStick.pointStickTo(scene.whiteBall)
+                    scene.updateAimHelper()
                 }
             }
         }
@@ -381,63 +334,13 @@ GameWindow {
             property var velocityQueue: []
 
             onTriggered: {
-                var whiteBall = entityManager.getEntityById("whiteBall")
-                var velX = whiteBall.velocity.x
-                var velY = whiteBall.velocity.y
-
-                velocityQueue.push(Math.abs(velX) + Math.abs(velY))
-                if(velocityQueue.length > 3)
-                    velocityQueue.shift()
-
-                var balls = entityManager.getEntityArrayByType("ball")
-                for (let i = 0; i < balls.length; i++)
-                {
-                    var ball = balls[i]
-                    var ballNum = ball.ballNumber
-                    if(scene.isBallinHole(ball))
-                    {
-                        //one of the playing balls went into a hole
-                        if(ballNum !== 0 && ballNum !== 8){
-                            if(ballNum < 8)
-                                playerOneScoreText.updateScore()
-                            else
-                                playerTwoScoreText.updateScore()
-                        }
-                        else if(gameWindow.playerScore[scene.curPlayer-1] === 7 && ballNum === 8)
-                        {
-                            //black one needs to be put into hole last to win
-                            gameWindow.playerScore[scene.curPlayer-1]++
-                            scene.gameOver()
-                        }
-                        else
-                        {
-                            //check for game over if white or black ball is in hole too early
-                            gameWindow.playerScore[scene.curPlayer-1] = -1
-                            scene.gameOver()
-                        }
-
-                        ball.circleColliderBody.active = false
-                        ball.enabled = false
-                        entityManager.removeEntityById(ball.entityId)
-                        balls.splice(i, 1)
-                    }
-                }
-
-                if(gameWindow.playerScore[0] >= 8 || gameWindow.playerScore[1] >= 8)
-                    scene.gameOver()
-
-                //white ball doesnt move anymore, reset stick, end round and change player
-                if(velocityQueue.reduce((a, b) => a + b, 0) === 0)
-                {
-                    playingStick.pointStickTo(whiteBall)
-                    endRoundTimer.stop()
-
-                    scene.curPlayer += 1
-                    if(scene.curPlayer > 2)
-                        scene.curPlayer = 1
-                    currentPlayerText.updatePlayer()
-                }
+                scene.updateAfterShoot()
             }
+        }
+
+
+        Component.onCompleted: {
+            scene.placeBalls()
         }
 
         function placeBalls()
@@ -473,26 +376,87 @@ GameWindow {
 
             //add position for white ball
             scene.ballPositions.push(Qt.point(scene.width / 3, triangleCenterY))
+
+            //init score
+            gameWindow.playerScore = [0, 0]
+            playerOneScoreText.updateScore(0)
+            playerTwoScoreText.updateScore(0)
         }
+
+
+        function updateAfterShoot()
+        {
+            var whiteBall = entityManager.getEntityById("whiteBall")
+            var velX = whiteBall.velocity.x
+            var velY = whiteBall.velocity.y
+
+            var velQueue = endRoundTimer.velocityQueue
+            velQueue.push(Math.abs(velX) + Math.abs(velY))
+            if(velQueue.length > 3)
+                velQueue.shift()
+
+            var balls = entityManager.getEntityArrayByType("ball")
+            for (let i = 0; i < balls.length; i++)
+            {
+                var ball = balls[i]
+                var ballNum = ball.ballNumber
+                if(scene.isBallinHole(ball))
+                {
+                    //one of the playing balls went into a hole
+                    if(ballNum !== 0 && ballNum !== 8){
+                        if(ballNum < 8)
+                        {
+                            playerOneScoreText.updateScore(1)
+                        }
+                        else
+                        {
+                            playerTwoScoreText.updateScore(1)
+                        }
+                    }
+                    else //white or black ball went into a hole
+                    {
+                        scene.gameOver()
+                    }
+
+                    ball.circleColliderBody.active = false
+                    ball.enabled = false
+                    entityManager.removeEntityById(ball.entityId)
+                    balls.splice(i, 1)
+                }
+            }
+
+            //white ball doesnt move anymore - reset stick, end round and change player
+            if(velQueue.reduce((a, b) => a + b, 0) === 0)
+            {
+                playingStick.pointStickTo(whiteBall)
+                endRoundTimer.stop()
+            }
+        }
+
 
         function rotToVec(angle, amplitude)
         {
             return Qt.point(amplitude * Math.cos(angle* (Math.PI/180)), amplitude * Math.sin(angle * (Math.PI/180)))
         }
 
-        function rayCast()
+        function updateAimHelper()
         {
-            raycast.maxFraction = 2
-
-                     //cast a ray from the mouse position through the center of the scene
+            console.log("update aim")
             var center = scene.whiteBall.circleColliderBody.getWorldCenter()
             var from = Qt.point(center.x, center.y)
-            rayCastVisRect.mx = from.x
-            rayCastVisRect.my = from.y
-            var rotVec = scene.rotToVec(playingStick.stickRotAngle, 10)
+            var rotVec = scene.rotToVec(playingStick.stickRotAngle, 1)
             var to = Qt.point(from.x + rotVec.x, from.y + rotVec.y)
 
+            rayCastVisRect.from = from
+            rayCastVisRect.x = from.x
+            rayCastVisRect.y = from.y
+            rayCastVisRect.rotation = playingStick.stickRotAngle
+
+            raycast.maxFraction = scene.width
             physicsWorld.rayCast(raycast, from, to)
+            physicsWorld.rayCast(raycast, from, to)
+
+            rayCastVisRect.visible = true
         }
 
         function shoot(impulseStrength, angle){
@@ -501,6 +465,7 @@ GameWindow {
             var vec = scene.rotToVec(angle, impulseStrength)
             ball.applyLinearImpulse(vec, center)
             endRoundTimer.start()
+            rayCastVisRect.visible = false
         }
 
         function isBallinHole(ball)
@@ -508,7 +473,7 @@ GameWindow {
             var center = ball.circleColliderBody.getWorldCenter()
             var holeDistance = scene.tableEdge + scene.wallHeight
             if(center.x < holeDistance || center.x > scene.width - holeDistance
-                || center.y < holeDistance || center.y > scene.height - holeDistance)
+                    || center.y < holeDistance || center.y > scene.height - holeDistance)
             {
                 return true
             }
@@ -524,7 +489,7 @@ GameWindow {
                 balls.splice(u, 1)
             }
             var toRemoveEntityTypes = ["ball"];
-             entityManager.removeEntitiesByFilter(toRemoveEntityTypes);
+            entityManager.removeEntitiesByFilter(toRemoveEntityTypes);
         }
 
 

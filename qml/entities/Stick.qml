@@ -14,6 +14,7 @@ EntityBase {
 
     property real stickDiameter
     property real ballDiameter
+
     property int stickImgWidthPx: 1902
     property int stickImgHeightPx: 53
     property real aimDistance: ballDiameter * 0.8
@@ -48,17 +49,6 @@ EntityBase {
         }
     }
 
-    Timer {
-        id: hideStickAfterShootTimer
-        interval: 750
-        running: false // start running from the beginning, when the scene is loaded
-        repeat: false // otherwise restart wont work
-
-        onTriggered: {
-            stick.visible = false
-        }
-    }
-
     Rectangle {
            id: rect
            z: 100
@@ -78,14 +68,13 @@ EntityBase {
                onPressed: {
                    stickRot.origin.x = stick.rect.width + aimDistance
                    stickRot.origin.y = stick.rect.height/2
-                   //stick.parent.rayCast()
                }
 
                onPositionChanged: {
                    var mouseAbs = mapToItem(stick.parent, mouseX, mouseY)
                    var angle = - Math.atan2(mouseAbs.x - pointAtCenter.x, mouseAbs.y - pointAtCenter.y) * 180 / Math.PI - 90;
                    stickRot.angle = angle
-                   //stick.parent.rayCast()
+                   stick.parent.updateAimHelper()
                 }
 
                onDoubleClicked:
@@ -106,8 +95,6 @@ EntityBase {
                        stick.parent.shoot(-stickCharge.x * shootingStrength, stickRot.angle)
                        stickResetAnimation.running = true
                        stickCharge.x = 0
-                       hideStickAfterShootTimer.start()
-
                    }
 
                }
@@ -124,6 +111,11 @@ EntityBase {
                        id: stickResetAnimation
                        // Animations on properties start running by default
                        running: false
+                       onFinished:
+                       {
+                           stick.visible = false
+                       }
+
                        NumberAnimation { from: aimDistance; to: 0; duration: 100; easing.type: Easing.BezierSpline }
                    }
 
@@ -143,12 +135,6 @@ EntityBase {
         stick.y = center.y - stick.rect.height/2
         stick.visible = true
         stick.enabled = true
+        stick.parent.updateAimHelper()
     }
-
-    // the soundEffect is played at a collision
-    GameSoundEffect {
-        id: collisionSound
-        source: "" // TODO add your own sound file here!
-    }
-
 }
