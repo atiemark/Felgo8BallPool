@@ -2,7 +2,7 @@
 <!DOCTYPE QDOCINDEX>
 <INDEX url="" title="Felgo 8 Ball Pool Tutorial Reference Documentation" version="" project="Felgo 8 Ball Pool Tutorial">
     <namespace name="" status="active" access="public" module="felgo 8 ball pool tutorial">
-        <page name="07-Adding-game-logic-and-display-text.html" href="07-adding-game-logic-and-display-text.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="1401" documented="true" subtype="page" title="Adding game logic and display text" fulltitle="Adding game logic and display text" subtitle="">
+        <page name="07-Adding-game-logic-and-display-text.html" href="07-adding-game-logic-and-display-text.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="1401" documented="true" subtype="page" title="Adding game logic and display text" fulltitle="Adding game logic and display text" subtitle="">
             <contents name="adding-endroundtimer" title="Adding endRoundTimer" level="1"/>
             <contents name="updateaftershoot" title="updateAfterShoot()" level="2"/>
             <contents name="checking-the-white-balls-velocity" title="Checking the white balls velocity" level="3"/>
@@ -14,27 +14,27 @@
             <contents name="gameover-function" title="gameOver() function" level="2"/>
             <contents name="clearallballs-balls-function" title="clearAllBalls(balls) function" level="2"/>
         </page>
-        <page name="06-Adding-the-pockets.html" href="06-adding-the-pockets.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="1188" documented="true" subtype="page" title="Adding the pockets" fulltitle="Adding the pockets" subtitle="">
+        <page name="06-Adding-the-pockets.html" href="06-adding-the-pockets.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="1188" documented="true" subtype="page" title="Adding the pockets" fulltitle="Adding the pockets" subtitle="">
             <contents name="updating-wall-qml" title="Updating Wall.qml" level="1"/>
             <contents name="styling-and-placing-the-walls-in-main-qml" title="Styling and placing the walls in Main.qml" level="1"/>
             <contents name="placement" title="Placement" level="2"/>
             <contents name="styling" title="Styling" level="2"/>
         </page>
-        <page name="03-Ball-placement.html" href="03-ball-placement.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="564" documented="true" subtype="page" title="Ball placement" fulltitle="Ball placement" subtitle="">
+        <page name="03-Ball-placement.html" href="03-ball-placement.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="564" documented="true" subtype="page" title="Ball placement" fulltitle="Ball placement" subtitle="">
             <contents name="generateballpositions-function" title="generateBallPositions() function" level="1"/>
             <contents name="placing-into-an-equilateral-triangle" title="Placing into an equilateral triangle:" level="2"/>
             <contents name="shuffling-the-array" title="Shuffling the array" level="2"/>
             <contents name="update-newentitypropertiesball-in-timer" title="Update newEntityPropertiesBall in timer" level="2"/>
             <contents name="call-generateballpositions" title="Call generateBallPositions()" level="2"/>
         </page>
-        <page name="08-Adding-a-Raycast-to-help-aiming.html" href="08-adding-a-raycast-to-help-aiming.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="1809" documented="true" subtype="page" title="Bonus: Adding a Raycast to help aiming" fulltitle="Bonus: Adding a Raycast to help aiming" subtitle=""/>
-        <page name="04-Creating-the-Stick.html" href="04-creating-the-stick.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="719" documented="true" subtype="page" title="Creating the Stick" fulltitle="Creating the Stick" subtitle="">
+        <page name="08-Adding-a-Raycast-to-help-aiming.html" href="08-adding-a-raycast-to-help-aiming.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="1809" documented="true" subtype="page" title="Bonus: Adding a Raycast to help aiming" fulltitle="Bonus: Adding a Raycast to help aiming" subtitle=""/>
+        <page name="04-Creating-the-Stick.html" href="04-creating-the-stick.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="719" documented="true" subtype="page" title="Creating the Stick" fulltitle="Creating the Stick" subtitle="">
             <contents name="adding-the-component-and-image" title="Adding the component and image" level="1"/>
             <contents name="setting-up-the-stick-component-properties" title="Setting up the Stick Component properties" level="2"/>
             <contents name="drawing-the-stick-image" title="Drawing the Stick image" level="2"/>
             <contents name="adding-the-stick-in-main-qml" title="Adding the stick in Main.qml" level="2"/>
         </page>
-        <page name="02-Creating-the-balls.html" href="02-creating-the-balls.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="244" documented="true" subtype="page" title="Creating the balls" fulltitle="Creating the balls" subtitle="">
+        <page name="02-Creating-the-balls.html" href="02-creating-the-balls.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="244" documented="true" subtype="page" title="Creating the balls" fulltitle="Creating the balls" subtitle="">
             <contents name="creating-the-baseentity-component" title="Creating the BaseEntity Component" level="1"/>
             <contents name="adding-basic-properties" title="Adding basic properties" level="2"/>
             <contents name="alias-for-velocity-center-and-circlecolliderbody" title="&quot;alias&quot; for velocity, center and circleColliderBody" level="2"/>
@@ -45,7 +45,7 @@
             <contents name="adding-a-collider" title="Adding a collider" level="1"/>
             <contents name="spawning-the-balls" title="Spawning the balls" level="1"/>
         </page>
-        <page name="01-Introduction-and-Setup.html" href="01-introduction-and-setup.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="1" documented="true" subtype="page" title="Felgo Challenge - 8 Ball Pool Game - Introduction and Setup" fulltitle="Felgo Challenge - 8 Ball Pool Game - Introduction and Setup" subtitle="" brief="Introduction">
+        <page name="index.html" href="index.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="1" documented="true" subtype="page" title="Felgo Challenge - 8 Ball Pool Game - Introduction and Setup" fulltitle="Felgo Challenge - 8 Ball Pool Game - Introduction and Setup" subtitle="" brief="Introduction">
             <contents name="tutorial-contents" title="Tutorial contents" level="1"/>
             <contents name="introduction" title="Introduction" level="1"/>
             <contents name="real-world-8-ball" title="Real world 8-Ball" level="2"/>
@@ -56,7 +56,7 @@
             <contents name="properties" title="Properties" level="2"/>
             <contents name="background" title="Background" level="2"/>
         </page>
-        <page name="05-Placing-the-Stick-and-adding-control.html" href="05-placing-the-stick-and-adding-control.html" status="active" location="tutorial.qdoc" filepath="D:/GameAssignment/Felgo8BallPool/doc/tutorial.qdoc" lineno="852" documented="true" subtype="page" title="Placing the Stick and adding control" fulltitle="Placing the Stick and adding control" subtitle="">
+        <page name="05-Placing-the-Stick-and-adding-control.html" href="05-placing-the-stick-and-adding-control.html" status="active" location="tutorial.qdoc" filepath="D:/Gitkraken/Felgo8BallPool/doc/tutorial.qdoc" lineno="852" documented="true" subtype="page" title="Placing the Stick and adding control" fulltitle="Placing the Stick and adding control" subtitle="">
             <contents name="adding-mouse-control-for-rotation-and-translation" title="Adding mouse control for rotation and translation" level="1"/>
             <contents name="rotation-transform" title="Rotation transform" level="2"/>
             <contents name="translation-transform" title="Translation transform" level="2"/>

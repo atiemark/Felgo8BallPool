@@ -1,5 +1,5 @@
 /*!
-    \page 01-Introduction-and-Setup.html
+    \page index.html
     \title Felgo Challenge - 8 Ball Pool Game - Introduction and Setup
 
     \brief Introduction
@@ -14,7 +14,7 @@
 
 
     \list
-        \li \l {01-Introduction-and-Setup.html} {Introduction and Setup}
+        \li \l {index.html} {Introduction and Setup}
         \li \l {02-Creating-the-balls.html} {Creating the balls}
         \li \l {03-Ball-placement.html} {Ball placement}
         \li \l {04-Creating-the-Stick.html} {Creating the Stick}
@@ -248,7 +248,7 @@ We can now add out final background color Rectangle right inside our main \c{Sce
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
@@ -568,13 +568,13 @@ Upon starting, we should now see our balls falling from the sky:
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
     In this chapter we will create a javascript function to fill our \c{property var ballPositions: []} array
-    \l{file:///D:/GameAssignment/Felgo8BallPool/doc/html/01-introduction-and-setup.html#properties} {created earlier in the introduction}.
+    \l{file:///D:/GameAssignment/Felgo8BallPool/doc/html/index.html#properties} {created earlier in the introduction}.
 
     \section1 generateBallPositions() function
 
@@ -723,7 +723,7 @@ It is also necessary to increase \c{updatesPerSecondForPhysics, velocityIteratio
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
@@ -776,7 +776,7 @@ It is also necessary to increase \c{updatesPerSecondForPhysics, velocityIteratio
     }
     \endqml
 
-    Again, similar to setting up the properties in \l{01-Introduction-and-Setup.html} {Introduction and Setup}, we create variables
+    Again, similar to setting up the properties in \l{index.html} {Introduction and Setup}, we create variables
 which are needed later when placing the stick and adding control as described in chapter: \l{05-Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
     \br
 Some of them should be self-explanatory, while othes will be described as you continue.
@@ -856,7 +856,7 @@ EntityBase {
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
@@ -1192,7 +1192,7 @@ It should now be possible to shoot exactly once:
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
@@ -1405,7 +1405,7 @@ The game now should look like this, which is almost the final look!
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
@@ -1813,7 +1813,7 @@ Because aiming can be hard, there is a bonus chapter on how to add a aiming ray:
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {01-Introduction-and-Setup.html} {Back to Start}
+            \l {index.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
@@ -1895,6 +1895,6 @@ GameWindow {
 
 \image image37.png
 
- \span {class="largeText"} {\b{Congratulations! You are done. \br Go back to start: \l {01-Introduction-and-Setup.html} {Introduction and Setup}}
+ \span {class="largeText"} {\b{Congratulations! You are done. \br Go back to start: \l {index.html} {Introduction and Setup}}
 
 */
