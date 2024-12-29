@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Adding the pockets | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#updating-wall-qml">Updating Wall.qml</a></li>
+<li class="level1"><a href="#styling-and-placing-the-walls-in-main-qml">Styling and placing the walls in Main.qml</a></li>
+<li class="level2"><a href="#placement">Placement</a></li>
+<li class="level2"><a href="#styling">Styling</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Adding the pockets</h1>
+<!-- $$$06-Adding-the-pockets.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>To simplify things, we just add pockets by leaving gaps between our walls!</p>
+<h2 id="updating-wall-qml">Updating Wall.qml</h2>
+<p>We update our <code translate="no">Wall.qml</code> and remove the Rectangle component from inside, as we want to color each wall individually in our Main.qml later.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+    <span class="name">entityType</span>: <span class="string">&quot;wall&quot;</span>
+
+    property <span class="type">alias</span> <span class="name">collider</span>: <span class="name">collider</span>
+
+    <span class="type">BoxCollider</span> {
+        <span class="name">id</span>: <span class="name">collider</span>
+        <span class="name">anchors</span>.fill: <span class="name">parent</span>
+        <span class="name">bodyType</span>: <span class="name">Body</span>.<span class="name">Static</span> <span class="comment">// the body shouldnt move</span>
+        <span class="name">friction</span>: <span class="number">0</span>
+        <span class="name">restitution</span>: <span class="number">1</span>
+
+        <span class="name">fixture</span>.onBeginContact: <span class="name">collidedWithBox</span>()
+    }
+}</pre>
+<p>We also remove the alias for the rectangle of course and the callback <code translate="no">fixture.onBeginContact: collidedWithBox()</code> as well as the corresponding signal. We end up with a simle EntityBase containign a box collider.</p>
+<p><br />
+</p>
+<p>The goal for our walls (and pockets inbetween) is to look like this:</p>
+<p class="centerAlign"><img src="images/image33.png" alt="" /></p><h2 id="styling-and-placing-the-walls-in-main-qml">Styling and placing the walls in Main.qml</h2>
+<p>Inside our Main.qml we now remove the 4 old Wall components and add the new ones, whichis quite a bit of code:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+    <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+    <span class="comment">//..</span>
+        <span class="type">Wall</span> {
+            <span class="comment">// bottom wall 1</span>
+            <span class="name">id</span>: <span class="name">bottomWallOne</span>
+            <span class="name">height</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">width</span>: (<span class="name">scene</span>.<span class="name">width</span> <span class="operator">/</span> <span class="number">2</span>) <span class="operator">-</span> <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">1.5</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">x</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">y</span>: <span class="name">scene</span>.<span class="name">height</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+
+            <span class="type">Rectangle</span>{
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+                <span class="name">radius</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span><span class="operator">/</span><span class="number">2</span>
+                <span class="name">gradient</span>: <span class="name">Gradient</span>
+                {
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">0.0</span>; <span class="name">color</span>: <span class="string">&quot;brown&quot;</span> }
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">1.0</span>; <span class="name">color</span>: <span class="string">&quot;#361B0C&quot;</span> }
+                }
+            }
+        }
+
+        <span class="type">Wall</span> {
+            <span class="comment">// bottom wall 2</span>
+            <span class="name">height</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">width</span>: (<span class="name">scene</span>.<span class="name">width</span> <span class="operator">/</span> <span class="number">2</span>) <span class="operator">-</span> <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">1.6</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">x</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">2</span> <span class="operator">+</span> <span class="name">bottomWallOne</span>.<span class="name">width</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">y</span>: <span class="name">scene</span>.<span class="name">height</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="type">Rectangle</span>
+            {
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+                <span class="name">radius</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span><span class="operator">/</span><span class="number">2</span>
+                <span class="name">gradient</span>: <span class="name">Gradient</span>
+                {
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">0.0</span>; <span class="name">color</span>: <span class="string">&quot;brown&quot;</span> }
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">1.0</span>; <span class="name">color</span>: <span class="string">&quot;#361B0C&quot;</span> }
+                }
+            }
+        }
+
+        <span class="type">Wall</span> {
+            <span class="comment">// left wall</span>
+            <span class="name">id</span>: <span class="name">leftWall</span>
+            <span class="name">width</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">height</span>: <span class="name">scene</span>.<span class="name">height</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">1.6</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span> <span class="operator">*</span> <span class="number">2</span>  <span class="operator">-</span> <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">*</span> <span class="number">2</span>
+            <span class="name">y</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">x</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="type">Rectangle</span>
+            {
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+                <span class="name">radius</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span><span class="operator">/</span><span class="number">2</span>
+                <span class="name">gradient</span>: <span class="name">Gradient</span>
+                {
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">0.0</span>; <span class="name">color</span>: <span class="string">&quot;brown&quot;</span>;  }
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">1.0</span>; <span class="name">color</span>: <span class="string">&quot;#361B0C&quot;</span> }
+                }
+            }
+        }
+
+        <span class="type">Wall</span> {
+            <span class="comment">// right wall</span>
+            <span class="name">width</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">height</span>: <span class="name">scene</span>.<span class="name">height</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">1.5</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span> <span class="operator">*</span> <span class="number">2</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">*</span> <span class="number">2</span>
+            <span class="name">y</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">x</span>: <span class="name">scene</span>.<span class="name">width</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="type">Rectangle</span>{
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+                <span class="name">radius</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span><span class="operator">/</span><span class="number">2</span>
+                <span class="name">gradient</span>: <span class="name">Gradient</span> {
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">0.0</span>; <span class="name">color</span>: <span class="string">&quot;#361B0C&quot;</span> }
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">1.0</span>; <span class="name">color</span>: <span class="string">&quot;brown&quot;</span> }
+                }
+
+            }
+        }
+
+
+        <span class="type">Wall</span> {
+            <span class="name">id</span>: <span class="name">topWallOne</span>
+            <span class="name">height</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">width</span>: (<span class="name">scene</span>.<span class="name">width</span> <span class="operator">/</span> <span class="number">2</span>) <span class="operator">-</span> <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">1.5</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">x</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">y</span>: <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="type">Rectangle</span>{
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+                <span class="name">radius</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span><span class="operator">/</span><span class="number">2</span>
+                <span class="name">gradient</span>: <span class="name">Gradient</span> {
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">0.0</span>; <span class="name">color</span>: <span class="string">&quot;#361B0C&quot;</span> }
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">1.0</span>; <span class="name">color</span>: <span class="string">&quot;brown&quot;</span> }
+                }
+
+            }
+        }
+
+        <span class="type">Wall</span> {
+            <span class="name">id</span>: <span class="name">topWallTwo</span>
+            <span class="name">height</span>: <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="name">width</span>: (<span class="name">scene</span>.<span class="name">width</span> <span class="operator">/</span> <span class="number">2</span>) <span class="operator">-</span> <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">1.5</span> <span class="operator">-</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">x</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span> <span class="operator">*</span> <span class="number">2</span> <span class="operator">+</span> <span class="name">bottomWallOne</span>.<span class="name">width</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="name">y</span>: <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">tableEdge</span>
+            <span class="type">Rectangle</span>{
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+                <span class="name">radius</span>: <span class="name">scene</span>.<span class="name">pocketSizeDiameter</span><span class="operator">/</span><span class="number">2</span>
+                <span class="name">gradient</span>: <span class="name">Gradient</span> {
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">0.0</span>; <span class="name">color</span>: <span class="string">&quot;#361B0C&quot;</span> }
+                    <span class="type">GradientStop</span> { <span class="name">position</span>: <span class="number">1.0</span>; <span class="name">color</span>: <span class="string">&quot;brown&quot;</span> }
+                }
+
+            }
+        }
+    <span class="comment">//..</span>
+    }
+<span class="comment">//..</span>
+}</pre>
+<h3 id="placement">Placement</h3>
+<p>The difference between those wall segments lies in the setting of <code translate="no">width, height, x and y</code> as you should be able to see. We use our properties</p>
+<ul>
+<li><code translate="no">scene.width</code></li>
+<li><code translate="no">scene.height</code></li>
+<li><code translate="no">scene.wallHeight</code></li>
+<li><code translate="no">scene.pocketSizeDiameter</code></li>
+<li><code translate="no">scene.tableEdge</code></li>
+</ul>
+<p>to position and scale the Rectangle component of each wall.</p>
+<h3 id="styling">Styling</h3>
+<p>For the wall colors we simply use a linear Gradient:</p>
+<pre class="qml" translate="no">gradient: Gradient {
+    GradientStop { position: 0.0; color: &quot;#361B0C&quot; }
+    GradientStop { position: 1.0; color: &quot;brown&quot; }
+}</pre>
+<p>The game now should look like this, which is almost the final look!</p>
+<p class="centerAlign"><img src="images/image34.png" alt="" /></p><p><span class="largeText"><b>The last step to make it playable is: <a href="07-adding-game-logic-and-display-text.html">Adding game logic and display text</a></b></p>
+</div>
+<!-- @@@06-Adding-the-pockets.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

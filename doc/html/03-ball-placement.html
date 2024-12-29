@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Ball placement | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#generateballpositions-function">generateBallPositions() function</a></li>
+<li class="level2"><a href="#placing-into-an-equilateral-triangle">Placing into an equilateral triangle:</a></li>
+<li class="level2"><a href="#shuffling-the-array">Shuffling the array</a></li>
+<li class="level2"><a href="#update-newentitypropertiesball-in-timer">Update newEntityPropertiesBall in timer</a></li>
+<li class="level2"><a href="#call-generateballpositions">Call generateBallPositions()</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Ball placement</h1>
+<!-- $$$03-Ball-placement.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>In this chapter we will create a javascript function to fill our <code translate="no">property var ballPositions: []</code> array <a href="file:///D:/GameAssignment/Felgo8BallPool/doc/html/01-introduction-and-setup.html#properties">created earlier in the introduction</a>.</p>
+<h2 id="generateballpositions-function">generateBallPositions() function</h2>
+<p>We need to place the balls into an equilateral triangle in 5 rows - starting with 5 balls in the longest row of length <b>a</b> at the base and 1 ball at the tip with distance <b>h = x + y</b> from the base.</p>
+<h3 id="placing-into-an-equilateral-triangle">Placing into an equilateral triangle:</h3>
+<p class="centerAlign"><img src="images/image26.png" alt="" /></p><p>We divide the playfield into 3 thirds, placing the white ball on the first third from the left: <code translate="no">scene.ballPositions.push(Qt.point(scene.width / 3, triangleCenterY))</code> <br />
+ The center of the triangle lies on the end of the 2nd third: <code translate="no">var triangleCenterX = scene.width * (2 / 3)</code> <br />
+ It is also known that the height of the triangle is <b>h = a/2 * sqrt(3)</b> and that the short height, <b>y</b>, as shown in the image above is <b>y = h/3</b>. <br />
+</p>
+<p>We can then iterate over all the rows to calculate the ball positions, decreasing the <b>x</b> in the outer and <b>y</b> in the inner for loop (<i>which are not the 2 parts of the height as shown in the image but just counting values, with badly chosen names!)</i>. <br />
+ The new position is added via <code translate="no">scene.ballPositions.push(Qt.point(curBallX, curBallY))</code> in the inner loop.</p>
+<pre class="cpp" translate="no">function generateBallPositions()
+{
+    var rowNum <span class="operator">=</span> scene<span class="operator">.</span>playBallTriangleNumRows
+    var ballDiameter <span class="operator">=</span> scene<span class="operator">.</span>ballDiameter
+    var triangleCenterX <span class="operator">=</span> scene<span class="operator">.</span>width <span class="operator">*</span> (<span class="number">2</span> <span class="operator">/</span> <span class="number">3</span>)
+    var triangleCenterY <span class="operator">=</span> scene<span class="operator">.</span>height<span class="operator">/</span><span class="number">2</span>
+    var triangleHeight <span class="operator">=</span> ((<span class="number">4</span> <span class="operator">*</span> ballDiameter) <span class="operator">/</span> <span class="number">2</span>) <span class="operator">*</span> Math<span class="operator">.</span>sqrt(<span class="number">3</span>)
+    var shortHeight <span class="operator">=</span> triangleHeight<span class="operator">/</span><span class="number">3</span>
+
+    <span class="keyword">for</span> (let x <span class="operator">=</span> rowNum; x <span class="operator">&gt;</span> <span class="number">0</span> ; x<span class="operator">-</span><span class="operator">-</span>) {
+        <span class="comment">//start with longest traingle row</span>
+        var curBallX <span class="operator">=</span> triangleCenterX <span class="operator">+</span> shortHeight <span class="operator">-</span> (triangleHeight<span class="operator">/</span><span class="number">4</span>) <span class="operator">*</span> (rowNum<span class="operator">-</span>x)
+
+        var rowLength <span class="operator">=</span> (x <span class="operator">-</span> <span class="number">1</span>) <span class="operator">*</span> ballDiameter
+        <span class="keyword">for</span> (let y <span class="operator">=</span> x; y <span class="operator">&gt;</span> <span class="number">0</span> ; y<span class="operator">-</span><span class="operator">-</span>)
+        {
+            var curBallY <span class="operator">=</span> triangleCenterY <span class="operator">-</span> rowLength<span class="operator">/</span><span class="number">2</span> <span class="operator">+</span> (x<span class="operator">-</span>y)<span class="operator">*</span>ballDiameter
+            scene<span class="operator">.</span>ballPositions<span class="operator">.</span>push(<span class="type">Qt</span><span class="operator">.</span>point(curBallX<span class="operator">,</span> curBallY))
+        }
+
+    }
+
+    function shuffleArray(array) {
+        <span class="keyword">for</span> (let i <span class="operator">=</span> array<span class="operator">.</span>length <span class="operator">-</span> <span class="number">1</span>; i <span class="operator">&gt;</span><span class="operator">=</span> <span class="number">0</span>; i<span class="operator">-</span><span class="operator">-</span>) {
+            <span class="keyword">const</span> j <span class="operator">=</span> Math<span class="operator">.</span>floor(Math<span class="operator">.</span>random() <span class="operator">*</span> (i <span class="operator">+</span> <span class="number">1</span>));
+            <span class="operator">[</span>array<span class="operator">[</span>i<span class="operator">]</span><span class="operator">,</span> array<span class="operator">[</span>j<span class="operator">]</span><span class="operator">]</span> <span class="operator">=</span> <span class="operator">[</span>array<span class="operator">[</span>j<span class="operator">]</span><span class="operator">,</span> array<span class="operator">[</span>i<span class="operator">]</span><span class="operator">]</span>;
+        }
+    }
+
+    shuffleArray(scene<span class="operator">.</span>ballPositions)
+
+    <span class="comment">//add position for white ball</span>
+    scene<span class="operator">.</span>ballPositions<span class="operator">.</span>push(<span class="type">Qt</span><span class="operator">.</span>point(scene<span class="operator">.</span>width <span class="operator">/</span> <span class="number">3</span><span class="operator">,</span> triangleCenterY))
+
+    <span class="comment">//init score</span>
+    <span class="comment">//gameWindow.playerScore = [0, 0]</span>
+    <span class="comment">//playerOneScoreText.updateScore(0)</span>
+    <span class="comment">//playerTwoScoreText.updateScore(0)</span>
+}</pre>
+<h3 id="shuffling-the-array">Shuffling the array</h3>
+<p>After this is done, the array is shuffed randomly using the inner nested function <code translate="no">function shuffleArray(array)</code>, so that the balls are placed randomly later eacht time the game (re)starts. This is a rather rough simplifications of the original game rules, as the should always be a full and half one at the right tips of the triangle for example. To prevent too much complexity, the balls are just placed randomly in the triangle. The last 3 lines in the function need to be uncommented later, after completing chapter <a href="07-adding-game-logic-and-display-text.html">Adding game logic and display text</a>!</p>
+<h3 id="update-newentitypropertiesball-in-timer">Update newEntityPropertiesBall in timer</h3>
+<p>To complete, we update the <code translate="no">onTriggered</code> callback to use the new positions from the shuffled array we just filled:</p>
+<pre class="qml" translate="no">    <span class="type">Timer</span> {
+        <span class="name">onTriggered</span>: {
+
+            var p = <span class="name">scene</span>.<span class="name">ballPositions</span>.<span class="name">pop</span>()
+            var newEntityPropertiesBall = {
+                x: <span class="name">p</span>.<span class="name">x</span>,
+                y: <span class="name">p</span>.<span class="name">y</span>,
+                z:<span class="number">1</span>,
+                width: <span class="name">scene</span>.<span class="name">ballDiameter</span>,
+                height: <span class="name">scene</span>.<span class="name">ballDiameter</span>,
+                ballNumber: <span class="name">curBallNum</span>,
+                density: <span class="name">scene</span>.<span class="name">ballDensity</span>
+            }
+        <span class="comment">//..</span>
+        }
+    <span class="comment">//..</span>
+}</pre>
+<h3 id="call-generateballpositions">Call generateBallPositions()</h3>
+<p>We also need to call the function inside:</p>
+<pre class="qml" translate="no">onSplashScreenFinished:
+{
+    scene.generateBallPositions()
+    initTimer.start()
+}</pre>
+<p>before the timer starts. Now after starting, the balls should be correctly placed.</p>
+<p class="centerAlign"><img src="images/image27.png" alt="" /></p><p>- but still falling down. To correct this, remove the gravity to zero:</p>
+<pre class="qml" translate="no"><span class="type">PhysicsWorld</span> {
+    <span class="name">id</span>: <span class="name">physicsWorld</span>
+    <span class="name">gravity</span>.y: <span class="number">0.0</span>
+    <span class="name">debugDrawVisible</span>: <span class="number">false</span>
+
+    <span class="comment">// these are performance settings to avoid boxes colliding too far together</span>
+    <span class="comment">// set them as low as possible so it still looks good</span>
+    <span class="name">updatesPerSecondForPhysics</span>: <span class="number">180</span>
+    <span class="name">velocityIterations</span>: <span class="number">90</span>
+    <span class="name">positionIterations</span>: <span class="number">90</span>
+}</pre>
+<p>It is also necessary to increase <code translate="no">updatesPerSecondForPhysics, velocityIterations and positionIterations</code> to account for fast shooting later.</p>
+<p><span class="largeText"><b>After this is done, it is time to add a cue stick:</b> <a href="04-creating-the-stick.html">Creating the Stick</a></span></p>
+</div>
+<!-- @@@03-Ball-placement.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

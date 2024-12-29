@@ -20,15 +20,15 @@ GameWindow {
         enabled: false
         visible: false
 
+        onVisibleChanged:
+        {
+            gameOverText.text = "Game Over! - Final Score:\nScored Solid Balls (1-7):\n" + gameWindow.playerScore[0] + "\n" +
+                    "Scored Striped Balls (9-15):\n" + gameWindow.playerScore[1]
+        }
+
         Rectangle{
             color: "transparent"
             anchors.fill: parent
-
-            onVisibleChanged:
-            {
-                gameOverText.text = "Game Over! - Final Score:\nScored Solid Balls (1-7):\n" + gameWindow.playerScore[0] + "\n" +
-                        "Scored Striped Balls (9-15):\n" + gameWindow.playerScore[1]
-            }
 
             Text {
                 id: gameOverText
@@ -47,7 +47,7 @@ GameWindow {
                     scene.ballPositions = []
                     gameWindow.playerScore = [0, 0]
                     scene.whiteBall = null
-                    scene.placeBalls()
+                    scene.generateBallPositions()
                     gameOverScene.enabled = false
                     gameOverScene.visible = false
                     gameWindow.activeScene = scene
@@ -126,7 +126,7 @@ GameWindow {
 
         PhysicsWorld {
             id: physicsWorld
-            gravity.y: 0.0 // make the objects fall faster
+            gravity.y: 0.0
             debugDrawVisible: false
 
             // these are performance settings to avoid boxes colliding too far together
@@ -134,7 +134,6 @@ GameWindow {
             updatesPerSecondForPhysics: 180
             velocityIterations: 90
             positionIterations: 90
-            //pixelsPerMeter: 1280 / (scene.fieldWidthMillimeter/1000)
         }
 
         Wall {
@@ -339,11 +338,8 @@ GameWindow {
         }
 
 
-        Component.onCompleted: {
-            scene.placeBalls()
-        }
 
-        function placeBalls()
+        function generateBallPositions()
         {
             var rowNum = scene.playBallTriangleNumRows
             var ballDiameter = scene.ballDiameter
@@ -441,7 +437,6 @@ GameWindow {
 
         function updateAimHelper()
         {
-            console.log("update aim")
             var center = scene.whiteBall.circleColliderBody.getWorldCenter()
             var from = Qt.point(center.x, center.y)
             var rotVec = scene.rotToVec(playingStick.stickRotAngle, 1)
@@ -509,6 +504,7 @@ GameWindow {
 
     onSplashScreenFinished:
     {
+        scene.generateBallPositions()
         initTimer.start()
     }
 }

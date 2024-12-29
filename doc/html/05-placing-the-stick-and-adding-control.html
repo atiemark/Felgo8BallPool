@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Placing the Stick and adding control | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#adding-mouse-control-for-rotation-and-translation">Adding mouse control for rotation and translation</a></li>
+<li class="level2"><a href="#rotation-transform">Rotation transform</a></li>
+<li class="level2"><a href="#translation-transform">Translation transform</a></li>
+<li class="level2"><a href="#mousearea">MouseArea</a></li>
+<li class="level2"><a href="#stickpressedtimer">stickPressedTimer</a></li>
+<li class="level2"><a href="#function-pointstickto-whiteball">function pointStickTo(whiteBall)</a></li>
+<li class="level1"><a href="#shooting">Shooting</a></li>
+<li class="level2"><a href="#cue-stick-shooting-animation">Cue stick shooting animation</a></li>
+<li class="level2"><a href="#shooting-function">Shooting function</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Placing the Stick and adding control</h1>
+<!-- $$$05-Placing-the-Stick-and-adding-control.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>Now that the stick is visible from inside a component, it should be placed and controllable via mouse/tap to perform a rotation and shooting mechanism! <br />
+ <br />
+ As shown below (a screenshot from the 8 Ball Pool app , it should be possible to rotate the stick via mouse click or tap and hold. Shooting should then be possible via a double click or tap.</p>
+<p class="centerAlign"><img src="images/image30.png" alt="" /></p><p class="figCaption">Screenshot from <a href="https://play.google.com/store/apps/details?id=com.miniclip.eightballpool">https://play.google.com/store/apps/details?id=com.miniclip.eightballpool</a></p>
+<h2 id="adding-mouse-control-for-rotation-and-translation">Adding mouse control for rotation and translation</h2>
+<h3 id="rotation-transform">Rotation transform</h3>
+<p>First things first, we need to add more flexibility for rotation. This can be done by adding a <code translate="no">transform: Rotation{}</code>.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+    <span class="comment">//..</span>
+
+    <span class="name">transform</span>: <span class="name">Rotation</span> {
+        <span class="name">id</span>: <span class="name">stickRot</span>
+        <span class="name">angle</span>: <span class="number">0</span>
+    }
+    <span class="comment">//..</span>
+}</pre>
+<p>The <code translate="no">Rotation</code> component features an origin which is used to rotate around. This makes it perfect to use for always pointing the stick at the white ball while aiming.</p>
+<h3 id="translation-transform">Translation transform</h3>
+<p>For &quot;loading&quot; or &quot;charging&quot; the stick before a shot, we want to visually display the shot intensity by moving/displaycing it away from it's center.<br />
+ This needs to be done after the rotation is applied, to make sure the stick is always moved on the x-axis first and is then rotated around the z.axis. <br />
+ So the transform needs to be nested below in the Rectangle:</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+        <span class="comment">//..</span>
+
+    <span class="type">Rectangle</span> {
+           <span class="name">id</span>: <span class="name">rect</span>
+          <span class="comment">//..</span>
+
+           <span class="name">transform</span>: <span class="name">Translate</span> {
+               <span class="name">id</span>: <span class="name">stickCharge</span>
+               <span class="name">x</span>: <span class="number">0</span>
+           }
+        <span class="comment">//..</span>
+    }
+<span class="comment">//..</span>
+}</pre>
+<h3 id="mousearea">MouseArea</h3>
+<p>In a <code translate="no">MouseArea</code> we rotate around the origin at the tip of the stick. When the user presses the stick, the origin is updated in <code translate="no">onPressed</code>. While the position is changed in <code translate="no">onPositionChanged</code>, the rotation angle is calculated and <code translate="no">stickRot.angle</code> updated. <br />
+ <code translate="no">mapToItem(stick.parent, mouseX, mouseY)</code> transfers the mouse coordinates from the stick <code translate="no">EntityBase</code>'s coordinate system to the parent's (<code translate="no">Scene</code>'s) coordinate system.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+    <span class="comment">//..</span>
+
+    <span class="name">transform</span>: <span class="name">Rotation</span> {
+        <span class="name">id</span>: <span class="name">stickRot</span>
+        <span class="name">angle</span>: <span class="number">0</span>
+    }
+
+    <span class="type">Rectangle</span> {
+
+        <span class="comment">//..</span>
+
+       <span class="name">transform</span>: <span class="name">Translate</span> {
+           <span class="name">id</span>: <span class="name">stickCharge</span>
+           <span class="name">x</span>: <span class="number">0</span>
+       }
+
+       <span class="type">MouseArea</span> {
+           <span class="name">anchors</span>.fill: <span class="name">parent</span>
+
+           <span class="name">onPressed</span>: {
+               <span class="name">stickRot</span>.<span class="name">origin</span>.<span class="name">x</span> <span class="operator">=</span> <span class="name">stick</span>.<span class="name">rect</span>.<span class="name">width</span> <span class="operator">+</span> <span class="name">aimDistance</span>
+               <span class="name">stickRot</span>.<span class="name">origin</span>.<span class="name">y</span> <span class="operator">=</span> <span class="name">stick</span>.<span class="name">rect</span>.<span class="name">height</span><span class="operator">/</span><span class="number">2</span>
+           }
+
+           <span class="name">onPositionChanged</span>: {
+               var mouseAbs = <span class="name">mapToItem</span>(<span class="name">stick</span>.<span class="name">parent</span>, <span class="name">mouseX</span>, <span class="name">mouseY</span>)
+               var angle = - <span class="name">Math</span>.<span class="name">atan2</span>(<span class="name">mouseAbs</span>.<span class="name">x</span> <span class="operator">-</span> <span class="name">pointAtCenter</span>.<span class="name">x</span>, <span class="name">mouseAbs</span>.<span class="name">y</span> <span class="operator">-</span> <span class="name">pointAtCenter</span>.<span class="name">y</span>) <span class="operator">*</span> <span class="number">180</span> <span class="operator">/</span> <span class="name">Math</span>.<span class="name">PI</span> <span class="operator">-</span> <span class="number">90</span>;
+               <span class="name">stickRot</span>.<span class="name">angle</span> <span class="operator">=</span> <span class="name">angle</span>
+               <span class="comment">//stick.parent.updateAimHelper()</span>
+            }
+
+           <span class="name">onDoubleClicked</span>:
+           {
+               <span class="name">shooting</span> <span class="operator">=</span> <span class="number">true</span>
+               <span class="name">stickPressedTimer</span>.<span class="name">start</span>()
+           }
+
+           <span class="name">onReleased</span>:
+           {
+               <span class="keyword">if</span>(<span class="name">shooting</span>)
+               {
+                   <span class="name">stick</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">false</span>
+                   <span class="name">stickPressedTimer</span>.<span class="name">stop</span>()
+                   <span class="name">stickPressedTimer</span>.<span class="name">decrease</span> <span class="operator">=</span> <span class="number">false</span>
+                   <span class="name">shooting</span> <span class="operator">=</span> <span class="number">false</span>
+                   <span class="name">stickShootAnimation</span>.<span class="name">running</span> <span class="operator">=</span> <span class="number">true</span>
+                   <span class="name">stick</span>.<span class="name">parent</span>.<span class="name">shoot</span>(-<span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">*</span> <span class="name">shootingStrength</span>, <span class="name">stickRot</span>.<span class="name">angle</span>)
+                   <span class="name">stickResetAnimation</span>.<span class="name">running</span> <span class="operator">=</span> <span class="number">true</span>
+                   <span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">=</span> <span class="number">0</span>
+               }
+
+           }
+       }
+    }
+    <span class="comment">//..</span>
+
+}</pre>
+<p>When the stick is double clicked, a timer is started and <code translate="no">shooting = true</code> is set in <code translate="no">onDoubleClicked</code>. <br />
+ <br />
+ The last important step is the <code translate="no">onReleased</code> callback. We need to know whether the user is aiming or shooting via a double click. Here we set <code translate="no">stick.enabled = false</code> to prevent any further user input, stop the timer and set back the variables to the initial state. brYou can also add a shooting animation to the stick &quot;<code translate="no">stickShootAnimation</code>, as described <a href="05-placing-the-stick-and-adding-control.html#cue-stick-shooting-animation">in here</a>. <br />
+ By calling <code translate="no">stick.parent.shoot(-stickCharge.x * shootingStrength, stickRot.angle)</code>, we finally give an impulse to the white ball to perform a shot, as described <a href="05-placing-the-stick-and-adding-control.html#shooting">here</a>.</p>
+<h3 id="stickpressedtimer">stickPressedTimer</h3>
+<p>In the <code translate="no">onTriggered</code> callback of the timer, which is called in an <code translate="no">interval: 1</code> ms (every millisecond), we increase or decrease <code translate="no">stickCharge.x</code> depending on the <code translate="no">chargingSpeed</code> and if <code translate="no">maxCharge</code> has been reached.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+<span class="comment">//..</span>
+    <span class="type">Timer</span> {
+        <span class="name">id</span>: <span class="name">stickPressedTimer</span>
+        <span class="name">interval</span>: <span class="number">1</span>
+        <span class="name">running</span>: <span class="number">false</span> <span class="comment">// don't start running from the beginning, when the scene is loaded</span>
+        <span class="name">repeat</span>: <span class="number">true</span> <span class="comment">// otherwise restart wont work</span>
+        property <span class="type">bool</span> <span class="name">decrease</span>: <span class="number">false</span>
+
+        <span class="name">onTriggered</span>: {
+            <span class="keyword">if</span>(<span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">&gt;</span> -<span class="name">maxCharge</span> <span class="operator">&amp;&amp;</span> !<span class="name">decrease</span>)
+                <span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">-=</span> <span class="name">chargingSpeed</span>
+            <span class="keyword">else</span> <span class="keyword">if</span>(<span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">&lt;=</span> -<span class="name">maxCharge</span>)
+                <span class="name">decrease</span> <span class="operator">=</span> <span class="number">true</span>
+
+            <span class="keyword">if</span>(<span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">&lt;</span> <span class="number">0</span> <span class="operator">&amp;&amp;</span> <span class="name">decrease</span>)
+                <span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">+=</span> <span class="name">chargingSpeed</span>
+            <span class="keyword">else</span> <span class="keyword">if</span>(<span class="name">stickCharge</span>.<span class="name">x</span> <span class="operator">&gt;=</span> <span class="number">0</span>)
+                <span class="name">decrease</span> <span class="operator">=</span> <span class="number">false</span>
+        }
+    }
+<span class="comment">//..</span>
+}</pre>
+<h3 id="function-pointstickto-whiteball">function pointStickTo(whiteBall)</h3>
+<p>The <code translate="no">pointAtCenter</code> is updated from <code translate="no">Main.qml</code> via <code translate="no">function pointStickTo(whiteBall)</code> and it is made sure the stick is always aiming towards the white ball.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+    <span class="name">id</span>: <span class="name">stick</span>
+    <span class="comment">//..</span>
+
+    <span class="type">Rectangle</span> {
+           <span class="name">id</span>: <span class="name">rect</span>
+           <span class="comment">//..</span>
+    }
+
+    <span class="keyword">function</span> <span class="name">pointStickTo</span>(whiteBall){
+        var center = <span class="name">whiteBall</span>.<span class="name">circleColliderBody</span>.<span class="name">getWorldCenter</span>()
+        <span class="name">stick</span>.<span class="name">pointAtCenter</span> <span class="operator">=</span> <span class="name">center</span>
+        <span class="name">stick</span>.<span class="name">x</span> <span class="operator">=</span> <span class="name">center</span>.<span class="name">x</span> <span class="operator">-</span> <span class="name">stick</span>.<span class="name">rect</span>.<span class="name">width</span> <span class="operator">-</span> <span class="name">aimDistance</span>
+        <span class="name">stick</span>.<span class="name">y</span> <span class="operator">=</span> <span class="name">center</span>.<span class="name">y</span> <span class="operator">-</span> <span class="name">stick</span>.<span class="name">rect</span>.<span class="name">height</span><span class="operator">/</span><span class="number">2</span>
+        <span class="name">stick</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">true</span>
+        <span class="name">stick</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">true</span>
+        <span class="name">stick</span>.<span class="name">parent</span>.<span class="name">updateAimHelper</span>()
+    }
+
+}</pre>
+<p>The line <code translate="no">stick.parent.updateAimHelper()</code> is uncommented later, when we add a raycast aim helper in chapter: <a href="08-adding-a-raycast-to-help-aiming.html">Adding a Raycast (to help aiming)</a></p>
+<p>In Main.qml, we add <code translate="no">scene.whiteBall = entityManager.getEntityById(&quot;whiteBall&quot;)</code> and c{playingStick.pointStickTo(scene.whiteBall)} after all balls have been placed of course.</p>
+<pre class="qml" translate="no"><span class="type">Timer</span> {
+    <span class="name">id</span>: <span class="name">initTimer</span>
+    <span class="comment">//..</span>
+    <span class="name">onTriggered</span>: {
+
+        <span class="comment">//..</span>
+
+        <span class="keyword">if</span>(<span class="name">scene</span>.<span class="name">ballPositions</span>.<span class="name">length</span> <span class="operator">==</span> <span class="number">0</span>)
+        {
+            <span class="name">initTimer</span>.<span class="name">stop</span>()
+            <span class="name">scene</span>.<span class="name">whiteBall</span> <span class="operator">=</span> <span class="name">entityManager</span>.<span class="name">getEntityById</span>(<span class="string">&quot;whiteBall&quot;</span>)
+            <span class="name">playingStick</span>.<span class="name">pointStickTo</span>(<span class="name">scene</span>.<span class="name">whiteBall</span>)
+            <span class="comment">//scene.updateAimHelper()</span>
+        }
+    }
+}</pre>
+<p>It should now be possible to aim the stick into any direction:</p>
+<p class="centerAlign"><img src="images/image31.png" alt="" /></p><p><b>When performing a double click to load and shoot, the app wil most likely crash, as we have not added the shooting animation inside the rectangle yet:</b></p>
+<h2 id="shooting">Shooting</h2>
+<h3 id="cue-stick-shooting-animation">Cue stick shooting animation</h3>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+    <span class="name">id</span>: <span class="name">stick</span>
+    <span class="comment">//..</span>
+
+    <span class="type">Timer</span> {
+        <span class="comment">//..</span>
+    }
+
+    <span class="type">Rectangle</span> {
+           <span class="name">id</span>: <span class="name">rect</span>
+           <span class="comment">//..</span>
+
+           SequentialAnimation on <span class="name">x</span> {
+                       <span class="name">id</span>: <span class="name">stickShootAnimation</span>
+                       <span class="comment">// Animations on properties start running by default</span>
+                       <span class="name">running</span>: <span class="number">false</span>
+                       <span class="type">NumberAnimation</span> { <span class="name">from</span>: <span class="number">0</span>; <span class="name">to</span>: <span class="name">aimDistance</span>; <span class="name">duration</span>: <span class="number">100</span>; <span class="name">easing</span>.type: <span class="name">Easing</span>.<span class="name">Linear</span> }
+                   }
+
+           SequentialAnimation on <span class="name">x</span> {
+                       <span class="name">id</span>: <span class="name">stickResetAnimation</span>
+                       <span class="comment">// Animations on properties start running by default</span>
+                       <span class="name">running</span>: <span class="number">false</span>
+                       <span class="name">onFinished</span>:
+                       {
+                           <span class="name">stick</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">false</span>
+                       }
+
+                       <span class="type">NumberAnimation</span> { <span class="name">from</span>: <span class="name">aimDistance</span>; <span class="name">to</span>: <span class="number">0</span>; <span class="name">duration</span>: <span class="number">100</span>; <span class="name">easing</span>.type: <span class="name">Easing</span>.<span class="name">BezierSpline</span> }
+                   }
+    }
+
+
+}</pre>
+<p>We simply add 2 <code translate="no">SequentialAnimation on x</code>, which animate the x coordinate of the stick once <code translate="no">from: 0; to: aimDistance;</code> and then <code translate="no">from: aimDistance; to: 0;</code> back again in a <code translate="no">NumberAnimation</code> component.</p>
+<h3 id="shooting-function">Shooting function</h3>
+<p>Also it might crash, because we have not defined a shoot function yet, which gives the white ball an impulse. In Main.qml, we add:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+    <span class="comment">//..</span>
+    <span class="type">Scene</span> {
+            <span class="comment">//..</span>
+
+        <span class="keyword">function</span> <span class="name">rotToVec</span>(angle, amplitude)
+        {
+            <span class="keyword">return</span> <span class="name">Qt</span>.<span class="name">point</span>(<span class="name">amplitude</span> <span class="operator">*</span> <span class="name">Math</span>.<span class="name">cos</span>(<span class="name">angle</span><span class="operator">*</span> (<span class="name">Math</span>.<span class="name">PI</span><span class="operator">/</span><span class="number">180</span>)), <span class="name">amplitude</span> <span class="operator">*</span> <span class="name">Math</span>.<span class="name">sin</span>(<span class="name">angle</span> <span class="operator">*</span> (<span class="name">Math</span>.<span class="name">PI</span><span class="operator">/</span><span class="number">180</span>)))
+        }
+
+
+        <span class="keyword">function</span> <span class="name">shoot</span>(impulseStrength, angle)
+        {
+            var ball = <span class="name">scene</span>.<span class="name">whiteBall</span>
+            var center = <span class="name">ball</span>.<span class="name">circleColliderBody</span>.<span class="name">getWorldCenter</span>()
+            var vec = <span class="name">scene</span>.<span class="name">rotToVec</span>(<span class="name">angle</span>, <span class="name">impulseStrength</span>)
+            <span class="name">ball</span>.<span class="name">applyLinearImpulse</span>(<span class="name">vec</span>, <span class="name">center</span>)
+            <span class="comment">//endRoundTimer.start()</span>
+            <span class="comment">//rayCastVisRect.visible = false</span>
+        }
+    <span class="comment">//..</span>
+    }
+}</pre>
+<p>The helper function <code translate="no">function rotToVec(angle, amplitude)</code> converts the <code translate="no">stickRot.angle</code> passed to the <code translate="no">shoot</code> function to a vector wth <code translate="no">amplitude</code>, in our case <code translate="no">-stickCharge.x * shootingStrength</code> as coded in <a href="05-placing-the-stick-and-adding-control.html#mousearea">#MouseArea</a>. We get the center of the white cue ball via the alias we defined earlier <code translate="no">circleColliderBody</code> and <code translate="no">getWorldCenter()</code> as documented in <a href="https://felgo.com/doc/felgo-body/#getWorldCenter-method">https://felgo.com/doc/felgo-body/#getWorldCenter-method</a>,</p>
+<p>It should now be possible to shoot exactly once:</p>
+<p class="centerAlign"><img src="images/image32.png" alt="" /></p><p><span class="largeText"><b>In order to be able to shoot into a pocket, we will create those in the next chapter:</b> <a href="06-adding-the-pockets.html">Adding the pockets</a></span></p>
+</div>
+<!-- @@@05-Placing-the-Stick-and-adding-control.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Adding game logic and display text | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#adding-endroundtimer">Adding endRoundTimer</a></li>
+<li class="level2"><a href="#updateaftershoot">updateAfterShoot()</a></li>
+<li class="level3"><a href="#checking-the-white-balls-velocity">Checking the white balls velocity</a></li>
+<li class="level3"><a href="#checking-for-a-score">Checking for a score</a></li>
+<li class="level3"><a href="#increasing-the-score-and-removing-a-ball">Increasing the score and removing a ball</a></li>
+<li class="level2"><a href="#playerscore">playerScore</a></li>
+<li class="level1"><a href="#game-over">Game Over</a></li>
+<li class="level2"><a href="#gameoverscene">gameOverScene</a></li>
+<li class="level2"><a href="#gameover-function">gameOver() function</a></li>
+<li class="level2"><a href="#clearallballs-balls-function">clearAllBalls(balls) function</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Adding game logic and display text</h1>
+<!-- $$$07-Adding-game-logic-and-display-text.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>In this final chapter we add more game logic, for counting the score, removing balls that wer shot into holes, resetting the stick after a round has been played and more. We add status text to display the score and a GameOver scene! Let's go.</p>
+<h2 id="adding-endroundtimer">Adding endRoundTimer</h2>
+<p>Inside Main.qml, we add a new timer which is needed to repeatedly check if a round has ended. This is done in the <code translate="no">onTriggered</code> callback via the <code translate="no">scene.updateAfterShoot()</code> function.</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="comment">//..</span>
+
+        <span class="type">Timer</span> {
+            <span class="name">id</span>: <span class="name">initTimer</span>
+            <span class="comment">//..</span>
+        }
+
+        <span class="type">Timer</span> {
+            <span class="name">id</span>: <span class="name">endRoundTimer</span>
+            <span class="name">interval</span>: <span class="number">50</span>
+            <span class="name">running</span>: <span class="number">false</span> <span class="comment">// start running from the beginning, when the scene is loaded</span>
+            <span class="name">repeat</span>: <span class="number">true</span> <span class="comment">// otherwise restart wont work</span>
+
+            property <span class="type">var</span> <span class="name">velocityQueue</span>: []
+
+            <span class="name">onTriggered</span>: {
+                <span class="name">scene</span>.<span class="name">updateAfterShoot</span>()
+            }
+        }
+
+        <span class="comment">//..</span>
+
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<h3 id="updateaftershoot">updateAfterShoot()</h3>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="comment">//..</span>
+        <span class="keyword">function</span> <span class="name">updateAfterShoot</span>()
+        {
+            var whiteBall = <span class="name">entityManager</span>.<span class="name">getEntityById</span>(<span class="string">&quot;whiteBall&quot;</span>)
+            var velX = <span class="name">whiteBall</span>.<span class="name">velocity</span>.<span class="name">x</span>
+            var velY = <span class="name">whiteBall</span>.<span class="name">velocity</span>.<span class="name">y</span>
+
+            var velQueue = <span class="name">endRoundTimer</span>.<span class="name">velocityQueue</span>
+            <span class="name">velQueue</span>.<span class="name">push</span>(<span class="name">Math</span>.<span class="name">abs</span>(<span class="name">velX</span>) <span class="operator">+</span> <span class="name">Math</span>.<span class="name">abs</span>(<span class="name">velY</span>))
+            <span class="keyword">if</span>(<span class="name">velQueue</span>.<span class="name">length</span> <span class="operator">&gt;</span> <span class="number">3</span>)
+                <span class="name">velQueue</span>.<span class="name">shift</span>()
+
+            var balls = <span class="name">entityManager</span>.<span class="name">getEntityArrayByType</span>(<span class="string">&quot;ball&quot;</span>)
+            <span class="keyword">for</span> (let i = 0; <span class="name">i</span> <span class="operator">&lt;</span> <span class="name">balls</span>.<span class="name">length</span>; i++)
+            {
+                var ball = <span class="name">balls</span>[<span class="name">i</span>]
+                var ballNum = <span class="name">ball</span>.<span class="name">ballNumber</span>
+                <span class="keyword">if</span>(<span class="name">scene</span>.<span class="name">isBallinHole</span>(<span class="name">ball</span>))
+                {
+                    <span class="comment">//one of the playing balls went into a hole</span>
+                    <span class="keyword">if</span>(<span class="name">ballNum</span> <span class="operator">!==</span> <span class="number">0</span> <span class="operator">&amp;&amp;</span> <span class="name">ballNum</span> <span class="operator">!==</span> <span class="number">8</span>){
+                        <span class="keyword">if</span>(<span class="name">ballNum</span> <span class="operator">&lt;</span> <span class="number">8</span>)
+                        {
+                            <span class="name">playerOneScoreText</span>.<span class="name">updateScore</span>(<span class="number">1</span>)
+                        }
+                        <span class="keyword">else</span>
+                        {
+                            <span class="name">playerTwoScoreText</span>.<span class="name">updateScore</span>(<span class="number">1</span>)
+                        }
+                    }
+                    <span class="keyword">else</span> <span class="comment">//white or black ball went into a hole</span>
+                    {
+                        <span class="name">scene</span>.<span class="name">gameOver</span>()
+                    }
+
+                    <span class="name">ball</span>.<span class="name">circleColliderBody</span>.<span class="name">active</span> <span class="operator">=</span> <span class="number">false</span>
+                    <span class="name">ball</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">false</span>
+                    <span class="name">entityManager</span>.<span class="name">removeEntityById</span>(<span class="name">ball</span>.<span class="name">entityId</span>)
+                    <span class="name">balls</span>.<span class="name">splice</span>(<span class="name">i</span>, <span class="number">1</span>)
+                }
+            }
+
+            <span class="comment">//white ball doesnt move anymore - reset stick, end round and change player</span>
+            <span class="keyword">if</span>(<span class="name">velQueue</span>.<span class="name">reduce</span>((<span class="keyword"></span>a, b) =&gt; <span class="keyword"></span><span class="name">a</span> <span class="operator">+</span> <span class="name">b</span>, <span class="number">0</span>) <span class="operator">===</span> <span class="number">0</span>)
+            {
+                <span class="name">playingStick</span>.<span class="name">pointStickTo</span>(<span class="name">whiteBall</span>)
+                <span class="name">endRoundTimer</span>.<span class="name">stop</span>()
+            }
+        }
+
+    <span class="comment">//..</span>
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<p>In this function, which is called every 50ms by the timer, we want to detect whether the game is ready for a new round but also if any of the balls were shot into a hole, which would increase the score! <br />
+</p>
+<h4 id="checking-the-white-balls-velocity">Checking the white balls velocity</h4>
+<p>While the latter is quite straightforward, the former requires a bit of thinking. The round should be over, once the white bal has stopped moving at all, in order to be able to reposition the cue stick and let the next turn start. To do this, we implement an array which is used as a queue <br />
+ <code translate="no">var velQueue = endRoundTimer.velocityQueue</code> that is updated with new velocity values from the white cue ball in (<code translate="no">velQueue.push(Math.abs(velX) + Math.abs(velY))</code> and shift to the right when it is full (3 array members):</p>
+<pre class="cpp" translate="no"><span class="keyword">if</span>(velQueue<span class="operator">.</span>length <span class="operator">&gt;</span> <span class="number">3</span>)
+    velQueue<span class="operator">.</span>shift()</pre>
+<p>We get the white ball's velocity via the alias &quot;velocity&quot; we added <a href="file:///D:/GameAssignment/Felgo8BallPool/doc/html/02-creating-the-balls.html#adding-basic-properties">here</a> <br />
+ At the end of the function, we update the cue stick and end the timer when all of the velocity values in the array are 0, meaining that the ball has not moved for more than 150ms (3 + 50ms, the timer interval)</p>
+<pre class="cpp" translate="no"><span class="comment">//white ball doesnt move anymore - reset stick, end round and change player</span>
+<span class="keyword">if</span>(velQueue<span class="operator">.</span>reduce((a<span class="operator">,</span> b) <span class="operator">=</span><span class="operator">&gt;</span> a <span class="operator">+</span> b<span class="operator">,</span> <span class="number">0</span>) <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>)
+{
+    playingStick<span class="operator">.</span>pointStickTo(whiteBall)
+    endRoundTimer<span class="operator">.</span>stop()
+}</pre>
+<p>A higher value than 3 might be needed when dealing with more complicated or faster collisions, as the velocity of the white ball can be 0 for a short amount of time when colliding with another ball or whall.</p>
+<h4 id="checking-for-a-score">Checking for a score</h4>
+<p>Inbetween those code segments above, we check if any ball went into a hole. We do this by iterating over all ball entities and calling <code translate="no">if(scene.isBallinHole(ball))</code> for each one:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="comment">//..</span>
+
+        <span class="keyword">function</span> <span class="name">isBallinHole</span>(ball)
+        {
+            var center = <span class="name">ball</span>.<span class="name">circleColliderBody</span>.<span class="name">getWorldCenter</span>()
+            var holeDistance = <span class="name">scene</span>.<span class="name">tableEdge</span> <span class="operator">+</span> <span class="name">scene</span>.<span class="name">wallHeight</span>
+            <span class="keyword">if</span>(<span class="name">center</span>.<span class="name">x</span> <span class="operator">&lt;</span> <span class="name">holeDistance</span> <span class="operator">||</span> <span class="name">center</span>.<span class="name">x</span> <span class="operator">&gt;</span> <span class="name">scene</span>.<span class="name">width</span> <span class="operator">-</span> <span class="name">holeDistance</span>
+                    <span class="operator">||</span> <span class="name">center</span>.<span class="name">y</span> <span class="operator">&lt;</span> <span class="name">holeDistance</span> <span class="operator">||</span> <span class="name">center</span>.<span class="name">y</span> <span class="operator">&gt;</span> <span class="name">scene</span>.<span class="name">height</span> <span class="operator">-</span> <span class="name">holeDistance</span>)
+            {
+                <span class="keyword">return</span> <span class="number">true</span>
+            }
+            <span class="keyword">return</span> <span class="number">false</span>
+        }
+    <span class="comment">//..</span>
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<p>In here, we again get the center of the ball and check wheather it is outside of the playing field.</p>
+<h4 id="increasing-the-score-and-removing-a-ball">Increasing the score and removing a ball</h4>
+<p>If this is the case, above function returns true and we increase the corresponding score (either for the full or the half ones. See <a href="07-adding-game-logic-and-display-text.html#playerscore">playerScore</a> for more. <br />
+ We also remove the ball from the array, from the entityManager and disable its collider and enabled property.</p>
+<h3 id="playerscore">playerScore</h3>
+<p>We add a variable for the score inside the game window:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+    <span class="name">id</span>: <span class="name">gameWindow</span>
+    <span class="name">activeScene</span>: <span class="name">scene</span>
+
+    property <span class="type">var</span> <span class="name">playerScore</span>: [<span class="number">0</span>, <span class="number">0</span>]
+
+<span class="comment">//..</span>
+}</pre>
+<p>And 2 Text components inside our scene:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="comment">//..</span>
+
+        <span class="type">Text</span> {
+            <span class="name">id</span>: <span class="name">playerOneScoreText</span>
+            <span class="name">color</span>: <span class="string">&quot;white&quot;</span>
+            <span class="name">font</span>.pixelSize: <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">*</span> <span class="number">0.7</span>
+            <span class="name">anchors</span>.left: <span class="name">topWallOne</span>.<span class="name">left</span>
+            <span class="name">z</span>: <span class="number">200</span> <span class="comment">// put on top of everything else in the Scene</span>
+
+            <span class="keyword">function</span> <span class="name">updateScore</span>(add)
+            {
+                <span class="name">gameWindow</span>.<span class="name">playerScore</span>[<span class="number">0</span>] <span class="operator">+=</span> <span class="name">add</span>
+                <span class="name">playerOneScoreText</span>.<span class="name">text</span> <span class="operator">=</span> <span class="string">&quot;    Scored Solid Balls (1-7): &quot;</span> <span class="operator">+</span> <span class="name">gameWindow</span>.<span class="name">playerScore</span>[<span class="number">0</span>]
+            }
+        }
+
+
+        <span class="type">Text</span> {
+            <span class="name">id</span>: <span class="name">playerTwoScoreText</span>
+            <span class="name">color</span>: <span class="string">&quot;white&quot;</span>
+            <span class="name">font</span>.pixelSize: <span class="name">scene</span>.<span class="name">wallHeight</span> <span class="operator">*</span> <span class="number">0.7</span>
+            <span class="name">anchors</span>.right: <span class="name">topWallTwo</span>.<span class="name">right</span>
+            <span class="name">x</span>: -<span class="name">scene</span>.<span class="name">pocketSizeDiameter</span>
+            <span class="name">z</span>: <span class="number">200</span> <span class="comment">// put on top of everything else in the Scene</span>
+
+            <span class="keyword">function</span> <span class="name">updateScore</span>(add)
+            {
+                <span class="name">gameWindow</span>.<span class="name">playerScore</span>[<span class="number">1</span>] <span class="operator">+=</span> <span class="name">add</span>
+                <span class="name">playerTwoScoreText</span>.<span class="name">text</span> <span class="operator">=</span> <span class="string">&quot;Scored Striped Balls (9-15): &quot;</span> <span class="operator">+</span> <span class="name">gameWindow</span>.<span class="name">playerScore</span>[<span class="number">1</span>] <span class="operator">+</span> <span class="string">&quot;    &quot;</span>
+            }
+        }
+    <span class="comment">//..</span>
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<p>As you can see, we again use the variables we defined earlier for placement and scaling of the text. Each Text component then also has a function <code translate="no">updateScore(add)</code> which is called from inside the <a href="07-adding-game-logic-and-display-text.html#updateaftershoot">updateAfterShoot()</a> function.</p>
+<p>We now need to uncomment the line</p>
+<pre class="cpp" translate="no">endRoundTimer<span class="operator">.</span>start()</pre>
+<p>inside <code translate="no">function shoot(impulseStrength, angle)</code>, and add/uncomment these 3 lines:</p>
+<pre class="cpp" translate="no"><span class="comment">//init score</span>
+gameWindow<span class="operator">.</span>playerScore <span class="operator">=</span> <span class="operator">[</span><span class="number">0</span><span class="operator">,</span> <span class="number">0</span><span class="operator">]</span>
+playerOneScoreText<span class="operator">.</span>updateScore(<span class="number">0</span>)
+playerTwoScoreText<span class="operator">.</span>updateScore(<span class="number">0</span>)</pre>
+<p>to the end of our <code translate="no">generateBallPositions()</code> function, which was explained <a href="03-ball-placement.html#generateballpositions-function">here</a>!</p>
+<p>A score should now be visible and updated if a ball is shot into a pocket!</p>
+<p class="centerAlign"><img src="images/image35.png" alt="" /></p><p>We are almost done.</p>
+<h2 id="game-over">Game Over</h2>
+<p>When all full or half ones plus the black 8 have been scored, OR a player shoots the cue ball or black 8 into a pocket (too early), the game ends.</p>
+<h3 id="gameoverscene">gameOverScene</h3>
+<p>For this, we implement a game over scene that simply displays the final score:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+    <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="name">id</span>: <span class="name">gameOverScene</span>
+        <span class="name">anchors</span>.fill: <span class="name">parent</span>
+        <span class="name">enabled</span>: <span class="number">false</span>
+        <span class="name">visible</span>: <span class="number">false</span>
+
+            <span class="name">onVisibleChanged</span>:
+            {
+                <span class="name">gameOverText</span>.<span class="name">text</span> <span class="operator">=</span> <span class="string">&quot;Game Over! - Final Score:\nScored Solid Balls (1-7):\n&quot;</span> <span class="operator">+</span> <span class="name">gameWindow</span>.<span class="name">playerScore</span>[<span class="number">0</span>] <span class="operator">+</span> <span class="string">&quot;\n&quot;</span> <span class="operator">+</span>
+                        <span class="string">&quot;Scored Striped Balls (9-15):\n&quot;</span> <span class="operator">+</span> <span class="name">gameWindow</span>.<span class="name">playerScore</span>[<span class="number">1</span>]
+            }
+
+        <span class="type">Rectangle</span>{
+            <span class="name">color</span>: <span class="string">&quot;transparent&quot;</span>
+            <span class="name">anchors</span>.fill: <span class="name">parent</span>
+
+            <span class="type">Text</span> {
+                <span class="name">id</span>: <span class="name">gameOverText</span>
+                <span class="name">font</span>.pixelSize: <span class="name">scene</span>.<span class="name">wallHeight</span>
+                <span class="name">anchors</span>.verticalCenter: <span class="name">parent</span>.<span class="name">verticalCenter</span>
+                <span class="name">anchors</span>.centerIn: <span class="name">parent</span>
+                <span class="name">color</span>: <span class="string">&quot;white&quot;</span>
+                <span class="name">z</span>:<span class="number">1</span>
+            }
+
+            <span class="type">MouseArea</span> {
+                <span class="name">anchors</span>.fill: <span class="name">parent</span>
+
+                <span class="name">onReleased</span>:
+                {
+                    <span class="name">scene</span>.<span class="name">ballPositions</span> <span class="operator">=</span> []
+                    <span class="name">gameWindow</span>.<span class="name">playerScore</span> <span class="operator">=</span> [<span class="number">0</span>, <span class="number">0</span>]
+                    <span class="name">scene</span>.<span class="name">whiteBall</span> <span class="operator">=</span> <span class="number">null</span>
+                    <span class="name">scene</span>.<span class="name">generateBallPositions</span>()
+                    <span class="name">gameOverScene</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">false</span>
+                    <span class="name">gameOverScene</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">false</span>
+                    <span class="name">gameWindow</span>.<span class="name">activeScene</span> <span class="operator">=</span> <span class="name">scene</span>
+                    <span class="name">scene</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">true</span>
+                    <span class="name">scene</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">true</span>
+                    <span class="name">initTimer</span>.<span class="name">start</span>()
+                }
+            }
+        }
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<p>This scene is disabled and invisible from the start and only turned on later in the <code translate="no">gameOver()</code> function. It features a text component that is updated in the <code translate="no">onVisibleChanged</code> callback of the scene. <br />
+ When the user clicks/tabs the screen anywhere, the MouseArea component cathes this in the <code translate="no">onReleased</code> callback and resets evereything neccessary for the game to restart.</p>
+<p class="centerAlign"><img src="images/image36.png" alt="" /></p><p class="figCaption">The game over screen</p>
+<h3 id="gameover-function">gameOver() function</h3>
+<p>The gameOver() function simply stops the endRoundTimer, resets the current ball number, cue stick rotation, removes all balls via the <a href="07-adding-game-logic-and-display-text.html#clearallballs-balls-function">clearAllBalls(balls) function</a> and sets the <a href="07-adding-game-logic-and-display-text.html#gameoverscene">gameOverScene</a> as the active scene, while hiding and disabling the current scene:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="comment">//..</span>
+
+        <span class="keyword">function</span> <span class="name">gameOver</span>()
+        {
+            <span class="name">endRoundTimer</span>.<span class="name">stop</span>()
+            <span class="name">initTimer</span>.<span class="name">curBallNum</span> <span class="operator">=</span> <span class="number">0</span>
+            <span class="name">playingStick</span>.<span class="name">stickRotAngle</span> <span class="operator">=</span> <span class="number">0</span>
+            <span class="name">scene</span>.<span class="name">clearAllBalls</span>(<span class="name">entityManager</span>.<span class="name">getEntityArrayByType</span>(<span class="string">&quot;ball&quot;</span>))
+            <span class="name">gameWindow</span>.<span class="name">activeScene</span> <span class="operator">=</span> <span class="name">gameOverScene</span>
+            <span class="name">gameOverScene</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">true</span>
+            <span class="name">gameOverScene</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">true</span>
+            <span class="name">scene</span>.<span class="name">enabled</span> <span class="operator">=</span> <span class="number">false</span>
+            <span class="name">scene</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">false</span>
+        }
+    <span class="comment">//..</span>
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<h3 id="clearallballs-balls-function">clearAllBalls(balls) function</h3>
+<p>This helper function disableds and removes all ball entities:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="comment">//..</span>
+
+        <span class="keyword">function</span> <span class="name">clearAllBalls</span>(balls)
+        {
+            <span class="keyword">for</span> (let u = 0; <span class="name">u</span> <span class="operator">&lt;</span> <span class="name">balls</span>.<span class="name">length</span>; u++)
+            {
+                <span class="name">balls</span>[<span class="name">u</span>].<span class="name">circleColliderBody</span>.<span class="name">active</span> <span class="operator">=</span> <span class="number">false</span>
+                <span class="name">balls</span>[<span class="name">u</span>].<span class="name">removeEntity</span>()
+                <span class="name">balls</span>.<span class="name">splice</span>(<span class="name">u</span>, <span class="number">1</span>)
+            }
+            var toRemoveEntityTypes = [<span class="string">&quot;ball&quot;</span>];
+            <span class="name">entityManager</span>.<span class="name">removeEntitiesByFilter</span>(<span class="name">toRemoveEntityTypes</span>);
+        }
+    <span class="comment">//..</span>
+    }
+
+    <span class="comment">//..</span>
+}</pre>
+<p><span class="largeText"><b>The game should now be fully playable in multiple rounds as long as you wish! :)<br />
+ Because aiming can be hard, there is a bonus chapter on how to add a aiming ray: <a href="08-adding-a-raycast-to-help-aiming.html">Adding a Raycast (to help aiming)</a></b></p>
+</div>
+<!-- @@@07-Adding-game-logic-and-display-text.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

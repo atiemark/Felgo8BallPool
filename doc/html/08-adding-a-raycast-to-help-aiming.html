@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Bonus: Adding a Raycast to help aiming | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar"><div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Bonus: Adding a Raycast to help aiming</h1>
+<!-- $$$08-Adding-a-Raycast-to-help-aiming.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>In this Bonus chapter the code for a raycast and Rectangle that displays a corresponding white line is given:</p>
+<pre class="qml" translate="no">import Felgo 4.0 <span class="comment">// for the gaming components</span>
+import QtQuick 2.0 <span class="comment">// for the Image element</span>
+import QtQuick.Controls <span class="comment">//for the Button</span>
+import &quot;entities&quot;
+
+<span class="type">GameWindow</span> {
+   <span class="comment">//..</span>
+
+    <span class="type">Scene</span> {
+        <span class="name">id</span>: <span class="name">scene</span>
+
+        <span class="comment">//..</span>
+
+        <span class="comment">//show the ray that is being cast as a rectangle</span>
+        <span class="type">Rectangle</span> {
+            <span class="name">id</span>: <span class="name">rayCastVisRect</span>
+            <span class="name">transformOrigin</span>: <span class="name">Item</span>.<span class="name">Left</span>
+            <span class="name">visible</span>: <span class="number">false</span>
+            <span class="name">antialiasing</span>: <span class="number">true</span>
+
+            property <span class="type">point</span> <span class="name">from</span>
+            property <span class="type">point</span> <span class="name">to</span>
+
+            <span class="name">onToChanged</span>: {
+                <span class="name">width</span> <span class="operator">=</span> <span class="name">Math</span>.<span class="name">abs</span>(<span class="name">Math</span>.<span class="name">hypot</span>(<span class="name">from</span>.<span class="name">x</span> <span class="operator">-</span> <span class="name">to</span>.<span class="name">x</span>, <span class="name">from</span>.<span class="name">y</span> <span class="operator">-</span> <span class="name">to</span>.<span class="name">y</span>))
+            }
+
+            <span class="name">width</span>: <span class="name">scene</span>.<span class="name">width</span>
+            <span class="name">height</span>: <span class="number">1</span>
+            <span class="name">color</span>: <span class="string">&quot;white&quot;</span>
+        }
+
+
+        <span class="type">RayCast</span> {
+            <span class="name">id</span>: <span class="name">raycast</span>
+            <span class="name">maxFraction</span>: <span class="name">scene</span>.<span class="name">width</span>
+            <span class="name">onFixtureReported</span>: (<span class="keyword"></span>fixture, contactPoint, contactNormal, fraction) =&gt;
+                               {
+                                   <span class="name">maxFraction</span> <span class="operator">=</span> <span class="name">fraction</span> <span class="comment">// cancel current raycast, report no more objects</span>
+                                   <span class="name">rayCastVisRect</span>.<span class="name">to</span> <span class="operator">=</span> <span class="name">contactPoint</span>
+                               }
+        }
+
+<span class="comment">//..</span>
+        <span class="keyword">function</span> <span class="name">updateAimHelper</span>()
+        {
+            <span class="name">console</span>.<span class="name">log</span>(<span class="string">&quot;update aim&quot;</span>)
+            var center = <span class="name">scene</span>.<span class="name">whiteBall</span>.<span class="name">circleColliderBody</span>.<span class="name">getWorldCenter</span>()
+            var from = <span class="name">Qt</span>.<span class="name">point</span>(<span class="name">center</span>.<span class="name">x</span>, <span class="name">center</span>.<span class="name">y</span>)
+            var rotVec = <span class="name">scene</span>.<span class="name">rotToVec</span>(<span class="name">playingStick</span>.<span class="name">stickRotAngle</span>, <span class="number">1</span>)
+            var to = <span class="name">Qt</span>.<span class="name">point</span>(<span class="name">from</span>.<span class="name">x</span> <span class="operator">+</span> <span class="name">rotVec</span>.<span class="name">x</span>, <span class="name">from</span>.<span class="name">y</span> <span class="operator">+</span> <span class="name">rotVec</span>.<span class="name">y</span>)
+
+            <span class="name">rayCastVisRect</span>.<span class="name">from</span> <span class="operator">=</span> <span class="name">from</span>
+            <span class="name">rayCastVisRect</span>.<span class="name">x</span> <span class="operator">=</span> <span class="name">from</span>.<span class="name">x</span>
+            <span class="name">rayCastVisRect</span>.<span class="name">y</span> <span class="operator">=</span> <span class="name">from</span>.<span class="name">y</span>
+            <span class="name">rayCastVisRect</span>.<span class="name">rotation</span> <span class="operator">=</span> <span class="name">playingStick</span>.<span class="name">stickRotAngle</span>
+
+            <span class="name">raycast</span>.<span class="name">maxFraction</span> <span class="operator">=</span> <span class="name">scene</span>.<span class="name">width</span>
+            <span class="name">physicsWorld</span>.<span class="name">rayCast</span>(<span class="name">raycast</span>, <span class="name">from</span>, <span class="name">to</span>)
+            <span class="name">physicsWorld</span>.<span class="name">rayCast</span>(<span class="name">raycast</span>, <span class="name">from</span>, <span class="name">to</span>)
+
+            <span class="name">rayCastVisRect</span>.<span class="name">visible</span> <span class="operator">=</span> <span class="number">true</span>
+        }
+
+       <span class="comment">//..</span>
+    }
+
+   <span class="comment">//..</span>
+}</pre>
+<p class="centerAlign"><img src="images/image37.png" alt="" /></p><p><span class="largeText"><b>Congratulations! You are done. <br />
+ Go back to start: <a href="01-introduction-and-setup.html">Introduction and Setup</a></b></p>
+</div>
+<!-- @@@08-Adding-a-Raycast-to-help-aiming.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

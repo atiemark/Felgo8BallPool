@@ -18,6 +18,11 @@ img {
     height: auto;
 }
 
+.largeText
+{
+	font-size: 150%;
+}
+
 .content .border img {
     box-shadow:3px 3px 8px 3px rgba(200,200,200,0.5)
 }
@@ -56,6 +61,8 @@ tt {
 links
 -----------
 */
+
+
 
 a:link {
     color: #007330;
@@ -751,7 +758,7 @@ Content table
     margin-left: 25px;
 }
 
-.level3 {
+.toc .level3 {
     border: none;
     margin-left: 30px;
 }

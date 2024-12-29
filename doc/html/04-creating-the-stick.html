@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Creating the Stick | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#adding-the-component-and-image">Adding the component and image</a></li>
+<li class="level2"><a href="#setting-up-the-stick-component-properties">Setting up the Stick Component properties</a></li>
+<li class="level2"><a href="#drawing-the-stick-image">Drawing the Stick image</a></li>
+<li class="level2"><a href="#adding-the-stick-in-main-qml">Adding the stick in Main.qml</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Creating the Stick</h1>
+<!-- $$$04-Creating-the-Stick.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>In this chapter we will add a cue stick using the image provided in the resources:</p>
+<p class="centerAlign"><img src="images/stick.png" alt="" /></p><h2 id="adding-the-component-and-image">Adding the component and image</h2>
+<p>Add the image to the Felgo project via right click onto the folder <code translate="no">img</code> and click &quot;Add existing file&quot;.</p>
+<p class="centerAlign"><img src="images/image28.png" alt="" /></p><p>You can remove the <code translate="no">box.png</code> and <code translate="no">particleSmoke.png</code> as they aren't needed anymore.</p>
+<p>Now, similarly to adding the Ball component earier in <a href="02-creating-the-balls.html">Creating the balls</a>, we add a <code translate="no">Stick.qml</code> to our entities folder.</p>
+<h3 id="setting-up-the-stick-component-properties">Setting up the Stick Component properties</h3>
+<p>Inside the qml, we create our stick entity using a few custom properties:</p>
+<pre class="qml" translate="no">    <span class="type">EntityBase</span> {
+        <span class="name">id</span>: <span class="name">stick</span>
+        <span class="name">entityId</span>: <span class="string">&quot;playingStick&quot;</span>
+        <span class="name">entityType</span>: <span class="string">&quot;stickType&quot;</span>
+        <span class="name">visible</span>: <span class="number">true</span>
+
+        <span class="name">transform</span>: <span class="name">Rotation</span> {
+            <span class="name">id</span>: <span class="name">stickRot</span>
+            <span class="name">angle</span>: <span class="number">0</span>
+        }
+
+        property <span class="type">real</span> <span class="name">stickDiameter</span>
+        property <span class="type">real</span> <span class="name">ballDiameter</span>
+
+        property <span class="type">int</span> <span class="name">stickImgWidthPx</span>: <span class="number">1902</span>
+        property <span class="type">int</span> <span class="name">stickImgHeightPx</span>: <span class="number">53</span>
+        property <span class="type">real</span> <span class="name">aimDistance</span>: <span class="name">ballDiameter</span> <span class="operator">*</span> <span class="number">0.8</span>
+        property <span class="type">real</span> <span class="name">shootingStrength</span>: <span class="number">6000</span>
+        property <span class="type">real</span> <span class="name">chargingSpeed</span>: <span class="number">1.7</span>
+        property <span class="type">real</span> <span class="name">maxCharge</span>: <span class="number">165</span>
+
+        property <span class="type">var</span> <span class="name">rect</span>: <span class="name">rect</span>
+        property <span class="type">point</span> <span class="name">pointAtCenter</span>
+        property <span class="type">point</span> <span class="name">chargeStartDistance</span>
+        property <span class="type">bool</span> <span class="name">shooting</span>: <span class="number">false</span>
+
+    <span class="comment">//..</span>
+}</pre>
+<p>Again, similar to setting up the properties in <a href="01-introduction-and-setup.html">Introduction and Setup</a>, we create variables which are needed later when placing the stick and adding control as described in chapter: <a href="05-placing-the-stick-and-adding-control.html">Placing the Stick and adding control</a> <br />
+ Some of them should be self-explanatory, while othes will be described as you continue.</p>
+<h3 id="drawing-the-stick-image">Drawing the Stick image</h3>
+<p>A <code translate="no">Rectangle</code> component containing an <code translate="no">Image</code> does the trick here. The rectangle is scaled acording to <code translate="no">stickDiameter</code> (which will be passed at creation time in <code translate="no">Main.qml</code>), <code translate="no">stick.stickImgWidthPx</code> and <code translate="no">stick.stickImgHeightPx</code> from the properties created as shown above.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+<span class="comment">//..</span>
+    <span class="type">Rectangle</span> {
+           <span class="name">id</span>: <span class="name">rect</span>
+           <span class="name">z</span>: <span class="number">100</span>
+           <span class="name">height</span>: <span class="name">stickDiameter</span>
+           <span class="name">width</span>: <span class="name">stick</span>.<span class="name">stickImgWidthPx</span> <span class="operator">*</span> (<span class="name">stickDiameter</span> <span class="operator">/</span> <span class="name">stick</span>.<span class="name">stickImgHeightPx</span>)
+           <span class="name">color</span>: <span class="string">&quot;transparent&quot;</span>
+
+
+           <span class="type">Image</span> {
+               <span class="name">id</span>: <span class="name">image</span>
+               <span class="name">source</span>: <span class="name">Qt</span>.<span class="name">resolvedUrl</span>(<span class="string">&quot;../../assets/img/stick.png&quot;</span>)
+               <span class="comment">// set the size of the image to the one of the collider and not vice versa, because the physics properties depend on the collider size</span>
+               <span class="name">anchors</span>.fill: <span class="name">rect</span>
+           }
+    }
+}</pre>
+<p>Using <code translate="no">anchors.fill: rect</code> we make sure that the image scales to fit the parent Rectangle <code translate="no">rect</code>. The value <code translate="no">z: 100</code> allows it to be drawn on top of components with lower z-values such as the balls, walls, text or background.</p>
+<h3 id="adding-the-stick-in-main-qml">Adding the stick in Main.qml</h3>
+<p>In our Main.qml, add the stick anywhere in the scene, preferably below the <code translate="no">Wall</code> components in the code</p>
+<pre class="qml" translate="no"><span class="type">Stick</span>
+{
+    <span class="name">id</span>: <span class="name">playingStick</span>
+    <span class="name">x</span>: <span class="number">50</span>
+    <span class="name">y</span>: <span class="number">50</span>
+    <span class="name">ballDiameter</span>: <span class="name">scene</span>.<span class="name">ballDiameter</span>
+    <span class="name">stickDiameter</span>: <span class="name">ballDiameter</span> <span class="operator">*</span> <span class="number">0.6</span>
+}</pre>
+<p>It should now be visible:</p>
+<p class="centerAlign"><img src="images/image29.png" alt="" /></p><p><span class="largeText"><b>Now we are ready to add some control:</b> <a href="05-placing-the-stick-and-adding-control.html">Placing the Stick and adding control</a> </span></p>
+</div>
+<!-- @@@04-Creating-the-Stick.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

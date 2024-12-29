@@ -8,7 +8,7 @@ EntityBase {
 
   property int ballNumber : 0
   property real density
-  property var colors: ["yellow", "blue", "red", "purple", "orange", "green", "maroon", "grey"]
+  property var colors: ["yellow", "blue", "red", "purple", "orange", "green", "maroon", "black"]
 
   property alias velocity: circleCollider.linearVelocity
   property alias centerX: circleCollider.anchors.horizontalCenter
@@ -45,6 +45,7 @@ EntityBase {
                 }
           }
       }
+
       Shape {
           rotation: 45 + 90 + 180
           anchors.horizontalCenter: parent.horizontalCenter

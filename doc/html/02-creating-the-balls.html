@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- tutorial.qdoc -->
+  <title>Creating the balls | Felgo 8 Ball Pool Tutorial</title>
+<link rel="stylesheet" type="text/css" href="style/offline.css"/>
+</head>
+<body>
+<div class="header" id="qtdocheader">
+    <div class="main">
+<div class="content">
+<div class="line">
+<div class="content mainContent">
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#creating-the-baseentity-component">Creating the BaseEntity Component</a></li>
+<li class="level2"><a href="#adding-basic-properties">Adding basic properties</a></li>
+<li class="level2"><a href="#alias-for-velocity-center-and-circlecolliderbody">&quot;alias&quot; for velocity, center and circleColliderBody</a></li>
+<li class="level1"><a href="#drawing-the-ball">Drawing the ball</a></li>
+<li class="level2"><a href="#the-basic-circle">The basic circle</a></li>
+<li class="level2"><a href="#striped-balls">Striped balls</a></li>
+<li class="level2"><a href="#the-number">The Number</a></li>
+<li class="level1"><a href="#adding-a-collider">Adding a collider</a></li>
+<li class="level1"><a href="#spawning-the-balls">Spawning the balls</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Creating the balls</h1>
+<!-- $$$02-Creating-the-balls.html-description -->
+<div class="descr" id="details">
+<div class="main-rounded"><div div class="navigationbar"><p><a href="01-introduction-and-setup.html">Back to Start</a></p>
+</div></div><p>Now it's time to add a Base entity to use for all of our playing balls in the game.</p>
+<h2 id="creating-the-baseentity-component">Creating the BaseEntity Component</h2>
+<p>Via right clicking onto the folder<code translate="no">qml/entities</code> and selecting b{Add..} we create a new Felgo Game Entity:</p>
+<p class="centerAlign"><img src="images/image23.png" alt="" /></p><p>We select <b>&quot;Empty Entity&quot;</b> and name it <b>&quot;Ball&quot;</b>.</p>
+<h3 id="adding-basic-properties">Adding basic properties</h3>
+<p>We then temove everything from inside <code translate="no">EntityBase</code>.</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+
+}</pre>
+<p>and add our own properties and aliases:</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+  <span class="name">id</span>: <span class="name">ballEntity</span>
+  <span class="name">entityType</span>: <span class="string">&quot;ball&quot;</span>
+
+  property <span class="type">int</span> <span class="name">ballNumber</span> : <span class="number">0</span>
+  property <span class="type">real</span> <span class="name">density</span>
+  property <span class="type">var</span> <span class="name">colors</span>: [<span class="string">&quot;yellow&quot;</span>, <span class="string">&quot;blue&quot;</span>, <span class="string">&quot;red&quot;</span>, <span class="string">&quot;purple&quot;</span>, <span class="string">&quot;orange&quot;</span>, <span class="string">&quot;green&quot;</span>, <span class="string">&quot;maroon&quot;</span>, <span class="string">&quot;black&quot;</span>]
+  <span class="name">entityId</span>: <span class="name">ballNumber</span> <span class="operator">==</span> <span class="number">0</span> ? <span class="string">&quot;whiteBall&quot;</span> : <span class="string">&quot;playBall&quot;</span> <span class="operator">+</span> <span class="name">ballNumber</span>
+
+  property <span class="type">alias</span> <span class="name">velocity</span>: <span class="name">circleCollider</span>.<span class="name">linearVelocity</span>
+  property <span class="type">alias</span> <span class="name">centerX</span>: <span class="name">circleCollider</span>.<span class="name">anchors</span>.<span class="name">horizontalCenter</span>
+  property <span class="type">alias</span> <span class="name">centerY</span>: <span class="name">circleCollider</span>.<span class="name">anchors</span>.<span class="name">verticalCenter</span>
+
+  <span class="name">entityId</span>: <span class="name">ballNumber</span> <span class="operator">==</span> <span class="number">0</span> ? <span class="string">&quot;whiteBall&quot;</span> : <span class="string">&quot;playBall&quot;</span> <span class="operator">+</span> <span class="name">ballNumber</span>
+
+  property <span class="type">alias</span> <span class="name">circleColliderBody</span>: <span class="name">circleCollider</span>.<span class="name">body</span>
+
+}</pre>
+<p>A <code translate="no">ballNumber</code> of <b>0</b> will be used for the white cue ball later. The <code translate="no">density</code> will be set from our <code translate="no">main.qml</code>. The color array contains all the possible ball colors in ascending order. <br />
+ The <code translate="no">entityId</code> will be needed later in chapter - <a href="07-adding-game-logic-and-display-text.html">Adding game logic and display text</a> - to identify which ball instance we are dealing with.</p>
+<h3 id="alias-for-velocity-center-and-circlecolliderbody">&quot;alias&quot; for velocity, center and circleColliderBody</h3>
+<p>As you can see we need a few alias properties for later, when we are checking the balls position via <code translate="no">centerX</code> and <code translate="no">centerY</code>, as well as the <code translate="no">velocity</code> of the ball and the <code translate="no">circleCollider</code> body from outside the <code translate="no">Ball.qml</code>, <br />
+ in chapter <a href="05-placing-the-stick-and-adding-control.html">Placing the Stick and adding control</a> and <a href="07-adding-game-logic-and-display-text.html">Adding game logic and display text</a>.</p>
+<h2 id="drawing-the-ball">Drawing the ball</h2>
+<p>For drawing the ball one possibility is to use a few nested, overlaying components. We will make use of the <code translate="no">Shape, ShapePath and PathArc</code> components to draw the stripes. If you want to see intermediate results while setting up the drawing components, you might skip ahead to <a href="02-creating-the-balls.html#adding-a-collider">adding the collider</a> and spawning the balls first, before you continue.</p>
+<h3 id="the-basic-circle">The basic circle</h3>
+<p>We add a <code translate="no">Retangle</code> with rounded edges of <code translate="no">radius: width / 2</code> (which makes the rectangle a a circle) to the entity:</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+<span class="comment">//...</span>
+  <span class="type">Rectangle</span> {
+      <span class="name">id</span>: <span class="name">circle</span>
+      <span class="name">width</span>: <span class="name">ballEntity</span>.<span class="name">width</span>; <span class="name">height</span>: <span class="name">width</span>
+      <span class="name">radius</span>: <span class="name">width</span> <span class="operator">/</span> <span class="number">2</span>
+      <span class="name">color</span>: <span class="name">ballEntity</span>.<span class="name">ballNumber</span> <span class="operator">==</span> <span class="number">0</span> ? <span class="string">&quot;white&quot;</span> : <span class="name">qsTr</span>(<span class="name">ballEntity</span>.<span class="name">colors</span>[(<span class="name">ballEntity</span>.<span class="name">ballNumber</span><span class="operator">-</span><span class="number">1</span>) <span class="operator">%</span> <span class="name">ballEntity</span>.<span class="name">colors</span>.<span class="name">length</span>]);
+      <span class="name">anchors</span>.horizontalCenter: <span class="name">parent</span>.<span class="name">horizontalCenter</span>
+      <span class="name">anchors</span>.verticalCenter: <span class="name">parent</span>.<span class="name">verticalCenter</span>
+    <span class="comment">//...</span>
+    }
+}</pre>
+<p>which is taking care of the base color, deciding via the <code translate="no">ballEntity.ballNumber</code> which color to choose from the array. The modulo dividsion inside <code translate="no">qsTr(ballEntity.colors[(ballEntity.ballNumber-1) % ballEntity.colors.length])</code> loops the array selection for balls 9-15. The anchors are making sure everything stays centered.</p>
+<h3 id="striped-balls">Striped balls</h3>
+<p>For striped balls from 9-15 the following component can be used inside the <code translate="no">Rectangle</code></p>
+<pre class="qml" translate="no">  <span class="type">Rectangle</span> {
+      <span class="type">Shape</span> {
+          <span class="name">rotation</span>: <span class="number">45</span> <span class="operator">+</span> <span class="number">90</span>
+          <span class="name">anchors</span>.horizontalCenter: <span class="name">parent</span>.<span class="name">horizontalCenter</span>
+          <span class="name">anchors</span>.verticalCenter: <span class="name">parent</span>.<span class="name">verticalCenter</span>
+          <span class="name">visible</span>: (<span class="name">ballEntity</span>.<span class="name">ballNumber</span> <span class="operator">&gt;</span> <span class="name">colors</span>.<span class="name">length</span>) ? <span class="number">true</span> : <span class="number">false</span>
+          <span class="type">ShapePath</span> {
+              <span class="name">fillColor</span>: <span class="string">&quot;white&quot;</span>
+              <span class="name">strokeColor</span>: <span class="string">&quot;transparent&quot;</span>
+              <span class="name">startX</span>: <span class="name">circle</span>.<span class="name">radius</span>; <span class="name">startY</span>: <span class="number">0</span>
+
+              <span class="type">PathArc</span> {
+                    <span class="name">x</span>: <span class="number">0</span>; <span class="name">y</span>: <span class="name">circle</span>.<span class="name">radius</span>
+                    <span class="name">radiusX</span>: <span class="name">circle</span>.<span class="name">radius</span>; <span class="name">radiusY</span>: <span class="name">circle</span>.<span class="name">radius</span>
+                    <span class="name">useLargeArc</span>: <span class="number">false</span>
+                }
+          }
+      }
+}</pre>
+<p>For this component to be usable we need to additinall import:</p>
+<pre class="qml" translate="no">import QtQuick.Shapes 1.11</pre>
+<p>Using the <code translate="no">PathArc</code> we draw a white circle segment in the <code translate="no">ShapePath</code> component which is then set to visible dependig on if the the ball number is above 8 (or the arrays length). It is also rotated correcty to fit onto the side. <br />
+ A second Stripe is added to the other side:</p>
+<pre class="qml" translate="no">Rectangle {
+    //..
+
+    Shape {
+        rotation: 45 + 90
+        //..
+    }
+
+    Shape {
+        rotation: 45 + 90 + 180
+        //..
+    }</pre>
+<p>with an additional rotation of 180 degrees.</p>
+<h3 id="the-number">The Number</h3>
+<p class="centerAlign"><img src="images/image25.png" alt="" /></p><p class="figCaption">A preview of the final desired result. Ball in the middle is the cue ball.</p>
+<p>Finally we add the ball number, rendered as text onto a smaller white inner circle like so:</p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+  <span class="comment">//..</span>
+
+  <span class="type">Rectangle</span> {
+      <span class="comment">//..</span>
+
+      <span class="type">Shape</span> {
+          <span class="comment">//..</span>
+          <span class="type">ShapePath</span> {
+              <span class="comment">//..</span>
+              <span class="type">PathArc</span> {
+                    <span class="comment">//..</span>
+                }
+          }
+      }
+
+      <span class="type">Shape</span> {
+         <span class="comment">//..</span>
+          <span class="type">ShapePath</span> {
+              <span class="comment">//..</span>
+              <span class="type">PathArc</span> {
+                    <span class="comment">//..</span>
+                }
+          }
+      }
+  }
+
+  <span class="type">Rectangle</span> {
+      <span class="name">id</span>: <span class="name">innerCircle</span>
+      <span class="name">width</span>: <span class="name">ballEntity</span>.<span class="name">width</span><span class="operator">/</span><span class="number">2.1</span>; <span class="name">height</span>: <span class="name">width</span>
+      <span class="name">radius</span>: <span class="name">width</span> <span class="operator">/</span> <span class="number">2</span>
+      <span class="name">color</span>: <span class="string">&quot;white&quot;</span>
+      <span class="name">visible</span>: <span class="name">ballEntity</span>.<span class="name">ballNumber</span> <span class="operator">==</span> <span class="number">0</span> ? <span class="number">false</span> : <span class="number">true</span>
+      <span class="name">anchors</span>.horizontalCenter: <span class="name">parent</span>.<span class="name">horizontalCenter</span>
+      <span class="name">anchors</span>.verticalCenter: <span class="name">parent</span>.<span class="name">verticalCenter</span>
+  }
+
+
+  <span class="type">Text</span> {
+      <span class="name">id</span>: <span class="name">number</span>
+      <span class="name">text</span>: <span class="name">qsTr</span>(<span class="name">ballEntity</span>.<span class="name">ballNumber</span>.<span class="name">toString</span>())
+      <span class="name">font</span>.pointSize: <span class="name">ballEntity</span>.<span class="name">width</span><span class="operator">/</span><span class="number">4</span>
+      <span class="name">visible</span>: <span class="name">ballEntity</span>.<span class="name">ballNumber</span> <span class="operator">==</span> <span class="number">0</span> ? <span class="number">false</span> : <span class="number">true</span>
+      <span class="name">anchors</span>.horizontalCenter: <span class="name">parent</span>.<span class="name">horizontalCenter</span>
+      <span class="name">anchors</span>.verticalCenter: <span class="name">parent</span>.<span class="name">verticalCenter</span>
+
+  }
+}</pre>
+<p>The Inner white circle <code translate="no">Rectanlge</code> and <code translate="no">Text</code> should only be visible if the ball is not the white ball of course, hence the <code translate="no">visible: ballEntity.ballNumber == 0 ? false : true</code>.</p>
+<h2 id="adding-a-collider">Adding a collider</h2>
+<p>Before we can do a first test and spawn our balls inside our scene, they need a collider. What previously was a <code translate="no">BoxCollider</code> for our Boxes is now a (surpise!) <code translate="no">CircleCollider</code></p>
+<pre class="qml" translate="no"><span class="type">EntityBase</span> {
+
+  <span class="type">CircleCollider</span> {
+      <span class="name">id</span>: <span class="name">circleCollider</span>
+      <span class="name">radius</span>: <span class="name">circle</span>.<span class="name">width</span><span class="operator">/</span><span class="number">2</span>
+      <span class="name">anchors</span>.horizontalCenter: <span class="name">parent</span>.<span class="name">horizontalCenter</span>
+      <span class="name">anchors</span>.verticalCenter: <span class="name">parent</span>.<span class="name">verticalCenter</span>
+
+      <span class="name">friction</span>: <span class="number">0</span>
+      <span class="name">restitution</span>: <span class="number">1</span> <span class="comment">// restitution is bounciness</span>
+      <span class="name">density</span>: <span class="name">ballEntity</span>.<span class="name">density</span><span class="operator">*</span><span class="number">2</span> <span class="comment">// this makes the ball more heavy</span>
+      <span class="name">angularDamping</span>: <span class="number">1.5</span>
+      <span class="name">linearDamping</span>: <span class="number">1.5</span> <span class="comment">//Damping is used to reduce the world velocity of bodies.</span>
+  }
+
+    <span class="keyword">function</span> <span class="name">applyLinearImpulse</span>(impulseVector, worldPoint)
+    {
+      <span class="name">circleCollider</span>.<span class="name">applyLinearImpulse</span>(<span class="name">impulseVector</span>, <span class="name">worldPoint</span>)
+    }
+}</pre>
+<p>We can now see the first physics simulation properties that we have added <code translate="no">friction, restitution, density, angularDamping, linearDamping</code>.</p>
+<p>According to the Felgo documentation for <a href="https://felgo.com/doc/felgo-colliderbase/#angularDamping-prop">ColliderBase</a> (The base class of Circle and BoxCollider):</p>
+<blockquote><p>&quot;Damping is different than friction because friction only occurs with contact. Damping is not a replacement for friction and the two effects should be used together.&quot;</p>
+</blockquote>
+<p>The function <code translate="no">applyLinearImpulse(impulseVector, worldPoint)</code> will be needed later to affect the white cue ball withthe cue stick.</p>
+<h2 id="spawning-the-balls">Spawning the balls</h2>
+<p>Inside <code translate="no">Main.qml</code> we can now spawn all of our play-balls by adding out own <b>timer</b>:</p>
+<pre class="qml" translate="no"><span class="type">Timer</span> {
+    <span class="name">id</span>: <span class="name">initTimer</span>
+    <span class="name">interval</span>: <span class="number">30</span>
+    <span class="name">running</span>: <span class="number">false</span> <span class="comment">// start running from the beginning, when the scene is loaded</span>
+    <span class="name">repeat</span>: <span class="number">true</span> <span class="comment">// otherwise restart wont work</span>
+
+    property <span class="type">int</span> <span class="name">curBallNum</span>: <span class="number">0</span>
+
+    <span class="name">onTriggered</span>: {
+
+        var newEntityPropertiesBall = {
+            x: <span class="name">utils</span>.<span class="name">generateRandomValueBetween</span>(<span class="name">scene</span>.<span class="name">safetyDistance</span>, <span class="name">scene</span>.<span class="name">width</span><span class="operator">-</span><span class="name">scene</span>.<span class="name">safetyDistance</span>),
+            y: <span class="name">scene</span>.<span class="name">safetyDistance</span>, <span class="comment">// position on top of the scene, at least below the top wall</span>
+            z:<span class="number">1</span>,
+            width: <span class="name">scene</span>.<span class="name">ballDiameter</span>,
+            height: <span class="name">scene</span>.<span class="name">ballDiameter</span>,
+            ballNumber: <span class="name">curBallNum</span>,
+            density: <span class="name">scene</span>.<span class="name">ballDensity</span>
+        }
+
+        <span class="name">entityManager</span>.<span class="name">createEntityFromUrlWithProperties</span>(
+                    <span class="name">Qt</span>.<span class="name">resolvedUrl</span>(<span class="string">&quot;entities/Ball.qml&quot;</span>),
+                    <span class="name">newEntityPropertiesBall</span>);
+
+
+        <span class="comment">// increase the curBallNum number</span>
+        curBallNum++
+
+        <span class="keyword">if</span>(<span class="name">curBallNum</span> <span class="operator">&gt;</span> <span class="number">15</span>)
+        {
+            <span class="name">initTimer</span>.<span class="name">stop</span>()
+        }
+    }
+}</pre>
+<p>By using dynamic properties <code translate="no">var newEntityPropertiesBall</code> and pass them to the <code translate="no">entityManager</code> we create all of our balls a random position.</p>
+<p>Please also note we set the timer to <code translate="no">running: false</code> and start it only after the sceen has loaded by:</p>
+<pre class="qml" translate="no"><span class="type">GameWindow</span> {
+    <span class="comment">//..</span>
+
+    <span class="name">onSplashScreenFinished</span>:
+    {
+        <span class="name">initTimer</span>.<span class="name">start</span>()
+    }
+}</pre>
+<p>Upon starting, we should now see our balls falling from the sky:</p>
+<p class="centerAlign"><img src="images/image24.png" alt="" /></p><p><span class="largeText"> <b>Now we are ready to place the balls in a triangle:</b> <a href="03-ball-placement.html">Ball placement</a></span></p>
+</div>
+<!-- @@@02-Creating-the-balls.html -->
+        </div>
+       </div>
+   </div>
+   </div>
+</div>
+</body>
+</html>

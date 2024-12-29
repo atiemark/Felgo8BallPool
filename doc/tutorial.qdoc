@@ -1,6 +1,6 @@
 /*!
-    \page Introduction-and-Setup.html
-    \title Felgo Challenge - 8 Ball Pool Game - Introduction
+    \page 01-Introduction-and-Setup.html
+    \title Felgo Challenge - 8 Ball Pool Game - Introduction and Setup
 
     \brief Introduction
 
@@ -12,18 +12,18 @@
     \section1 Tutorial contents
 
 
-\div
+
     \list
-        \li - \l {Introduction-and-Setup.html} {Introduction and Setup}
-        \li - \l {Creating-the-balls.html} {Creating the balls}
-        \li - \l {Ball-placement.html} {Ball placement}
-        \li - \l {Creating-the-Stick.html} {Creating the Stick}
-        \li - \l {Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
-        \li - \l {Adding-the-pockets.html} {Adding the pockets}
-        \li - \l {Adding-game-logic-and-display-text.html} {Adding game logic and display text}
-        \li - \l {Adding-a-Raycast-to-help-aiming.html} {Adding a Raycast (to help aiming)}
+        \li \l {01-Introduction-and-Setup.html} {Introduction and Setup}
+        \li \l {02-Creating-the-balls.html} {Creating the balls}
+        \li \l {03-Ball-placement.html} {Ball placement}
+        \li \l {04-Creating-the-Stick.html} {Creating the Stick}
+        \li \l {05-Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
+        \li \l {06-Adding-the-pockets.html} {Adding the pockets}
+        \li \l {07-Adding-game-logic-and-display-text.html} {Adding game logic and display text}
+        \li \l {08-Adding-a-Raycast-to-help-aiming.html} {Adding a Raycast (to help aiming)}
     \endlist
-\enddiv
+
 
     \section1 Introduction
 
@@ -68,7 +68,7 @@
 
     \section2 Adoption of existing "Physics - Stack The Box" project
 
-    For our game, we only need the walls for now (which then will be adapted to feature pockets later \l {Adding-the-pockets.html} {here}).
+    For our game, we only need the walls for now (which then will be adapted to feature pockets later \l {06-Adding-the-pockets.html} {here}).
 \br
 We can therefore go to our main qml file \c{qml/Main.qml} in the Project side bar:
 \image image20.png
@@ -120,7 +120,7 @@ from inside \c{GameWindow} as we will add our own green background later. Then \
 \endqml
 
 
-- And lastly we remove the blue toggle buttons:
+- we remove the blue toggle buttons:
 \qml
         // for toggling audio and particles
         Column {
@@ -128,7 +128,31 @@ from inside \c{GameWindow} as we will add our own green background later. Then \
         }
 \endqml
 
-We should now end up with just the walls:
+
+\qml
+Wall {
+//..
+            onCollidedWithBox: {
+                // gets called when the wall collides with a box, and the game should restart
+
+                // remove all entities of type "box", but not the walls
+                entityManager.removeEntitiesByFilter(["box"]);
+                // reset the createdBoxes amount
+                scene.createdBoxes = 0;
+            }
+}
+\endqml
+
+- lastly, we will also write our timers from scratch (or you can also copy and modify the exising one) - so remove:
+
+\qml
+        Timer {
+            id: timer
+            //..
+        }
+\endqml
+
+We should now end up with just the walls when we hit \b{"Run"} or \b{STRG + R}:
 
 \image image21.png
 
@@ -136,11 +160,26 @@ Because we dont need any boxes or smoke in our pool game, we can also remove the
 
 \image image22.png
 
+Additinally, we dont need to count the number of created boxes:
+\qml
+        // gets increased when a new box is created, and reset to 0 when a new game is started
+        // start with 1, because initially 1 Box is created
+        property int createdBoxes: 1
+\endqml
+
+since we do not need to ocunt boxes anymore either.
+
+
+\section1 Setting up the main properties
+
 Now, before we create the balls for our game in the next chapter, we set up a few properties which define the scale of our game for later.
 Those properties can be adjusted to fit different table-, pocket-, wall- and ball sizes in millimeter later.
 
+\section2 Properties
 
     \qml
+    Scene
+    {
         id: scene
         width: 1280
         property int fieldWidthMillimeter: 2240
@@ -165,110 +204,1697 @@ Those properties can be adjusted to fit different table-, pocket-, wall- and bal
         property var whiteBall
 
         //...
-}
+    }
     \endqml
 
-The properties \c{ballDiameter, ballDensity, wallHeight, pocketSizeDiameter, ...} are then automativally calculated on startup. We give our game scene a standard \c{width} of \c{1280} pixels.
+The properties \c{ballDiameter, ballDensity, wallHeight, etc...} are then automativally calculated on startup. We give our game scene a standard \c{width} of \c{1280} pixels.\br
+The property array \c{ballDiameterballPositions} is going to be needed \l{03-Ball-placement.html} {Ball placement} and the \c{whiteBall} in \l{05-Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
 
+\section2 Background
+
+We can now add out final background color Rectangle right inside our main \c{Scene}:
+
+\qml
+    Scene {
+        //..
+
+        Rectangle {
+            anchors.fill: parent
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#004000" }
+                GradientStop { position: 1.0; color: "green" }
+            }
+            z: -1
+        }
+
+        //..
+}
+\endqml
+
+
+\span {class="largeText"} { \b{The next step will be creating our balls:} \l {02-Creating-the-balls.html} {Creating the balls}}
 
 */
 
 
 
+
+
+
 /*!
-    \page Creating-the-balls.html
+    \page 02-Creating-the-balls.html
     \title Creating the balls
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
+    Now it's time to add a Base entity to use for all of our playing balls in the game.
+
+\section1 Creating the BaseEntity Component
+
+    Via right clicking onto the folder\c{qml/entities} and selecting b\{Add..} we create a new Felgo Game Entity:
+
+\image image23.png
+
+We select \b{"Empty Entity"} and name it \b{"Ball"}.
+
+\section2 Adding basic properties
+
+We then temove everything from inside \c{EntityBase}.
+
+\qml
+EntityBase {
+
+}
+\endqml
+
+and add our own properties and aliases:
+
+\qml
+EntityBase {
+  id: ballEntity
+  entityType: "ball"
+
+  property int ballNumber : 0
+  property real density
+  property var colors: ["yellow", "blue", "red", "purple", "orange", "green", "maroon", "black"]
+  entityId: ballNumber == 0 ? "whiteBall" : "playBall" + ballNumber
+
+  property alias velocity: circleCollider.linearVelocity
+  property alias centerX: circleCollider.anchors.horizontalCenter
+  property alias centerY: circleCollider.anchors.verticalCenter
+
+  entityId: ballNumber == 0 ? "whiteBall" : "playBall" + ballNumber
+
+  property alias circleColliderBody: circleCollider.body
+
+}
+\endqml
+
+A \c{ballNumber} of \b{0} will be used for the white cue ball later. The \c{density} will be set from our \c{main.qml}. The color array contains all the possible ball colors in ascending order.
+\br
+The \c{entityId} will be needed later in chapter - \l {07-Adding-game-logic-and-display-text.html} {Adding game logic and display text} - to identify which ball instance we are dealing with.
+
+\section2 "alias" for velocity, center and circleColliderBody
+
+As you can see we need a few alias properties for later, when we are checking the balls position via \c{centerX} and \c{centerY},
+as well as the \c{velocity} of the ball and the \c{circleCollider} body from outside the \c{Ball.qml}, \br in chapter \l {05-Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control} and
+\l{07-Adding-game-logic-and-display-text.html} {Adding game logic and display text}.
+
+
+\section1 Drawing the ball
+
+For drawing the ball one possibility is to use a few nested, overlaying components. We will make use of the \c{Shape, ShapePath and PathArc} components to draw the stripes.
+If you want to see intermediate results while setting up the drawing components, you might skip ahead to \l {02-Creating-the-balls.html#adding-a-collider} {adding the collider} and spawning the balls first, before you continue.
+
+\section2 The basic circle
+
+We add a \c{Retangle} with rounded edges of \c{radius: width / 2} (which makes the rectangle a a circle) to the entity:
+
+\qml
+EntityBase {
+//...
+  Rectangle {
+      id: circle
+      width: ballEntity.width; height: width
+      radius: width / 2
+      color: ballEntity.ballNumber == 0 ? "white" : qsTr(ballEntity.colors[(ballEntity.ballNumber-1) % ballEntity.colors.length]);
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+    //...
+    }
+}
+\endqml
+
+which is taking care of the base color, deciding via the \c{ballEntity.ballNumber} which color to choose from the array. The modulo dividsion inside \c{ qsTr(ballEntity.colors[(ballEntity.ballNumber-1) % ballEntity.colors.length])} loops the array selection for balls 9-15.
+The anchors are making sure everything stays centered.
+
+
+\section2 Striped balls
+
+For striped balls from 9-15 the following component can be used inside the \c{Rectangle}
+
+\qml
+  Rectangle {
+      Shape {
+          rotation: 45 + 90
+          anchors.horizontalCenter: parent.horizontalCenter
+          anchors.verticalCenter: parent.verticalCenter
+          visible: (ballEntity.ballNumber > colors.length) ? true : false
+          ShapePath {
+              fillColor: "white"
+              strokeColor: "transparent"
+              startX: circle.radius; startY: 0
+
+              PathArc {
+                    x: 0; y: circle.radius
+                    radiusX: circle.radius; radiusY: circle.radius
+                    useLargeArc: false
+                }
+          }
+      }
+}
+\endqml
+
+For this component to be usable we need to additinall import:
+\qml
+import QtQuick.Shapes 1.11
+\endqml
+
+
+Using the \c{PathArc} we draw a white circle segment in the \c{ShapePath} component which is then set to visible dependig on if the the ball number is above 8 (or the arrays length).
+It is also rotated correcty to fit onto the side.
+\br
+A second Stripe is added to the other side:
+
+\qml
+  Rectangle {
+      //..
+
+      Shape {
+          rotation: 45 + 90
+          //..
+      }
+
+      Shape {
+          rotation: 45 + 90 + 180
+          //..
+      }
+\endqml
+
+with an additional rotation of 180 degrees.
+
+
+\section2 The Number
+
+
+\image image25.png
+\caption A preview of the final desired result. Ball in the middle is the cue ball.
+
+
+Finally we add the ball number, rendered as text onto a smaller white inner circle like so:
+
+\qml
+EntityBase {
+  //..
+
+  Rectangle {
+      //..
+
+      Shape {
+          //..
+          ShapePath {
+              //..
+              PathArc {
+                    //..
+                }
+          }
+      }
+
+      Shape {
+         //..
+          ShapePath {
+              //..
+              PathArc {
+                    //..
+                }
+          }
+      }
+  }
+
+  Rectangle {
+      id: innerCircle
+      width: ballEntity.width/2.1; height: width
+      radius: width / 2
+      color: "white"
+      visible: ballEntity.ballNumber == 0 ? false : true
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+  }
+
+
+  Text {
+      id: number
+      text: qsTr(ballEntity.ballNumber.toString())
+      font.pointSize: ballEntity.width/4
+      visible: ballEntity.ballNumber == 0 ? false : true
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+
+  }
+}
+\endqml
+
+The Inner white circle \c{Rectanlge} and \c{Text} should only be visible if the ball is not the white ball of course, hence the \c{visible: ballEntity.ballNumber == 0 ? false : true}.
+
+\section1 Adding a collider
+
+Before we can do a first test and spawn our balls inside our scene, they need a collider. What previously was a \c{BoxCollider} for our Boxes is now a (surpise!) \c{CircleCollider}
+
+\qml
+
+EntityBase {
+
+  CircleCollider {
+      id: circleCollider
+      radius: circle.width/2
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+
+      friction: 0
+      restitution: 1 // restitution is bounciness
+      density: ballEntity.density*2 // this makes the ball more heavy
+      angularDamping: 1.5
+      linearDamping: 1.5 //Damping is used to reduce the world velocity of bodies.
+  }
+
+    function applyLinearImpulse(impulseVector, worldPoint)
+    {
+      circleCollider.applyLinearImpulse(impulseVector, worldPoint)
+    }
+}
+\endqml
+
+We can now see the first physics simulation properties that we have added \c{friction, restitution, density, angularDamping, linearDamping}.
+
+According to the Felgo documentation for \l{https://felgo.com/doc/felgo-colliderbase/#angularDamping-prop} {ColliderBase} (The base class of Circle and BoxCollider):
+\quotation "Damping is different than friction because friction only occurs with contact. Damping is not a replacement for friction and the two effects should be used together."
+\endquotation
+
+The function \c{applyLinearImpulse(impulseVector, worldPoint)} will be needed later to affect the white cue ball withthe cue stick.
+
+\section1 Spawning the balls
+
+Inside \c{Main.qml} we can now spawn all of our play-balls by adding out own \b{timer}:
+
+\qml
+        Timer {
+            id: initTimer
+            interval: 30
+            running: false // start running from the beginning, when the scene is loaded
+            repeat: true // otherwise restart wont work
+
+            property int curBallNum: 0
+
+            onTriggered: {
+
+                var newEntityPropertiesBall = {
+                    x: utils.generateRandomValueBetween(scene.safetyDistance, scene.width-scene.safetyDistance),
+                    y: scene.safetyDistance, // position on top of the scene, at least below the top wall
+                    z:1,
+                    width: scene.ballDiameter,
+                    height: scene.ballDiameter,
+                    ballNumber: curBallNum,
+                    density: scene.ballDensity
+                }
+
+                entityManager.createEntityFromUrlWithProperties(
+                            Qt.resolvedUrl("entities/Ball.qml"),
+                            newEntityPropertiesBall);
+
+
+                // increase the curBallNum number
+                curBallNum++
+
+                if(curBallNum > 15)
+                {
+                    initTimer.stop()
+                }
+            }
+        }
+\endqml
+
+By using dynamic properties \c{var newEntityPropertiesBall} and pass them to the \c{entityManager} we create all of our balls a random position.
+
+Please also note we set the timer to \c{running: false} and start it only after the sceen has loaded by:
+
+\qml
+GameWindow {
+    //..
+
+    onSplashScreenFinished:
+    {
+        initTimer.start()
+    }
+}
+\endqml
+
+Upon starting, we should now see our balls falling from the sky:
+
+\image image24.png
+
+ \span {class="largeText"} { \b{Now we are ready to place the balls in a triangle:} \l {03-Ball-placement.html} {Ball placement}}
 */
 
+
+
+
+
+
+
+
+
+
+
 /*!
-    \page Ball-placement.html
+    \page 03-Ball-placement.html
     \title Ball placement
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
+    In this chapter we will create a javascript function to fill our \c{property var ballPositions: []} array
+    \l{file:///D:/GameAssignment/Felgo8BallPool/doc/html/01-introduction-and-setup.html#properties} {created earlier in the introduction}.
+
+    \section1 generateBallPositions() function
+
+    We need to place the balls into an equilateral triangle in 5 rows - starting with 5 balls in the longest row of length \b{a} at the base and 1 ball at the tip with distance \b{h = x + y} from the base.
+
+    \section2 Placing into an equilateral triangle:
+
+    \image image26.png
+
+    We divide the playfield into 3 thirds, placing the white ball on the first third from the left: \c{scene.ballPositions.push(Qt.point(scene.width / 3, triangleCenterY))}
+    \br
+    The center of the triangle lies on the end of the 2nd third: \c{var triangleCenterX = scene.width * (2 / 3)}
+    \br
+    It is also known that the height of the triangle is \b{h = a/2 * sqrt(3)} and that the short height, \b{y}, as shown in the image above is \b{y  =  h/3}.
+    \br
+
+    We can then iterate over all the rows to calculate the ball positions, decreasing the \b{x} in the outer and \b{y} in the inner for loop
+(\e{which are not the 2 parts of the height as shown in the image but just counting values, with badly chosen names!)}.
+    \br
+    The new position is added via \c{scene.ballPositions.push(Qt.point(curBallX, curBallY))} in the inner loop.
+
+    \code
+        function generateBallPositions()
+        {
+            var rowNum = scene.playBallTriangleNumRows
+            var ballDiameter = scene.ballDiameter
+            var triangleCenterX = scene.width * (2 / 3)
+            var triangleCenterY = scene.height/2
+            var triangleHeight = ((4 * ballDiameter) / 2) * Math.sqrt(3)
+            var shortHeight = triangleHeight/3
+
+            for (let x = rowNum; x > 0 ; x--) {
+                //start with longest traingle row
+                var curBallX = triangleCenterX + shortHeight - (triangleHeight/4) * (rowNum-x)
+
+                var rowLength = (x - 1) * ballDiameter
+                for (let y = x; y > 0 ; y--)
+                {
+                    var curBallY = triangleCenterY - rowLength/2 + (x-y)*ballDiameter
+                    scene.ballPositions.push(Qt.point(curBallX, curBallY))
+                }
+
+            }
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i >= 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            shuffleArray(scene.ballPositions)
+
+            //add position for white ball
+            scene.ballPositions.push(Qt.point(scene.width / 3, triangleCenterY))
+
+            //init score
+            //gameWindow.playerScore = [0, 0]
+            //playerOneScoreText.updateScore(0)
+            //playerTwoScoreText.updateScore(0)
+        }
+    \endcode
+
+    \section2 Shuffling the array
+
+    After this is done, the array is shuffed randomly using the inner nested function \c{function shuffleArray(array)},
+    so that the balls are placed randomly later eacht time the game (re)starts.
+    This is a rather rough simplifications of the original game rules, as the should always be a full and half one at the right tips of the triangle for example.
+    To prevent too much complexity, the balls are just placed randomly in the triangle.
+    The last 3 lines in the function need to be uncommented later, after completing chapter \l{07-Adding-game-logic-and-display-text.html} {Adding game logic and display text}!
+
+    \section2 Update newEntityPropertiesBall in timer
+
+    To complete, we update the \c{onTriggered} callback to use the new positions from the shuffled array we just filled:
+
+    \qml
+        Timer {
+            onTriggered: {
+
+                var p = scene.ballPositions.pop()
+                var newEntityPropertiesBall = {
+                    x: p.x,
+                    y: p.y,
+                    z:1,
+                    width: scene.ballDiameter,
+                    height: scene.ballDiameter,
+                    ballNumber: curBallNum,
+                    density: scene.ballDensity
+                }
+            //..
+            }
+        //..
+    }
+\endqml
+
+\section2 Call generateBallPositions()
+
+We also need to call the function inside:
+
+\qml
+    onSplashScreenFinished:
+    {
+        scene.generateBallPositions()
+        initTimer.start()
+    }
+\endqml
+
+before the timer starts. Now after starting, the balls should be correctly placed.
+
+\image image27.png
+
+- but still falling down. To correct this, remove the gravity to zero:
+
+\qml
+        PhysicsWorld {
+            id: physicsWorld
+            gravity.y: 0.0
+            debugDrawVisible: false
+
+            // these are performance settings to avoid boxes colliding too far together
+            // set them as low as possible so it still looks good
+            updatesPerSecondForPhysics: 180
+            velocityIterations: 90
+            positionIterations: 90
+        }
+\endqml
+
+It is also necessary to increase \c{updatesPerSecondForPhysics, velocityIterations and positionIterations} to account for fast shooting later.
+
+ \span {class="largeText"} {\b{After this is done, it is time to add a cue stick:} \l{04-Creating-the-Stick.html} {Creating the Stick}}
+
 */
 
+
+
+
+
+
+
+
+
 /*!
-    \page Creating-the-Stick.html
+    \page 04-Creating-the-Stick.html
     \title Creating the Stick
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
+    In this chapter we will add a cue stick using the image provided in the resources:
+    \image stick.png
+
+    \section1 Adding the component and image
+
+    Add the image to the Felgo project via right click onto the folder \c{img} and click "Add existing file".
+    \image image28.png
+
+    You can remove the \c{box.png} and \c{particleSmoke.png} as they aren't needed anymore.
+
+    Now, similarly to adding the Ball component earier in \l{02-Creating-the-balls.html} {Creating the balls}, we add a \c{Stick.qml} to our entities folder.
+
+    \section2 Setting up the Stick Component properties
+
+    Inside the qml, we create our stick entity using a few custom properties:
+
+    \qml
+
+        EntityBase {
+            id: stick
+            entityId: "playingStick"
+            entityType: "stickType"
+            visible: true
+
+            transform: Rotation {
+                id: stickRot
+                angle: 0
+            }
+
+            property real stickDiameter
+            property real ballDiameter
+
+            property int stickImgWidthPx: 1902
+            property int stickImgHeightPx: 53
+            property real aimDistance: ballDiameter * 0.8
+            property real shootingStrength: 6000
+            property real chargingSpeed: 1.7
+            property real maxCharge: 165
+
+            property var rect: rect
+            property point pointAtCenter
+            property point chargeStartDistance
+            property bool shooting: false
+
+        //..
+    }
+    \endqml
+
+    Again, similar to setting up the properties in \l{01-Introduction-and-Setup.html} {Introduction and Setup}, we create variables
+which are needed later when placing the stick and adding control as described in chapter: \l{05-Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
+    \br
+Some of them should be self-explanatory, while othes will be described as you continue.
+
+
+    \section2 Drawing the Stick image
+
+    A \c{Rectangle} component containing an \c{Image} does the trick here.
+    The rectangle is scaled acording to \c{stickDiameter} (which will be passed at creation time in \c{Main.qml}),
+    \c{stick.stickImgWidthPx} and \c{stick.stickImgHeightPx} from the properties created as shown above.
+
+
+    \qml
+EntityBase {
+//..
+    Rectangle {
+           id: rect
+           z: 100
+           height: stickDiameter
+           width: stick.stickImgWidthPx * (stickDiameter / stick.stickImgHeightPx)
+           color: "transparent"
+
+
+           Image {
+               id: image
+               source: Qt.resolvedUrl("../../assets/img/stick.png")
+               // set the size of the image to the one of the collider and not vice versa, because the physics properties depend on the collider size
+               anchors.fill: rect
+           }
+    }
+}
+    \endqml
+
+    Using \c{anchors.fill: rect} we make sure that the image scales to fit the parent Rectangle \c{rect}. The value \c{z: 100} allows it to
+    be drawn on top of components with lower z-values such as the balls, walls, text or background.
+
+
+    \section2 Adding the stick in Main.qml
+
+    In our Main.qml, add the stick anywhere in the scene, preferably below the \c{Wall} components in the code
+
+    \qml
+        Stick
+        {
+            id: playingStick
+            x: 50
+            y: 50
+            ballDiameter: scene.ballDiameter
+            stickDiameter: ballDiameter * 0.6
+        }
+    \endqml
+
+    It should now be visible:
+    \image image29.png
+
+ \span {class="largeText"} {\b{Now we are ready to add some control:} \l{05-Placing-the-Stick-and-adding-control.html} {Placing the Stick and adding control}
+}
+
 */
 
+
+
+
+
+
+
+
+
+
+
+
+
 /*!
-    \page Placing-the-Stick-and-adding-control.html
+    \page 05-Placing-the-Stick-and-adding-control.html
     \title Placing the Stick and adding control
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
+    Now that the stick is visible from inside a component, it should be placed and controllable via mouse/tap to perform a rotation and shooting mechanism!
+\br
+\br
+As shown below (a screenshot from the 8 Ball Pool app , it should be possible
+to rotate the stick via mouse click or tap and hold. Shooting should then be possible via a double click or tap.
+
+\image image30.png
+\caption Screenshot from \l{https://play.google.com/store/apps/details?id=com.miniclip.eightballpool}
+
+
+    \section1 Adding mouse control for rotation and translation
+
+    \section2 Rotation transform
+
+    First things first, we need to add more flexibility for rotation. This can be done by adding a \c{transform: Rotation{}}.
+
+    \qml
+    EntityBase {
+        //..
+
+        transform: Rotation {
+            id: stickRot
+            angle: 0
+        }
+        //..
+    }
+
+\endqml
+
+The \c{Rotation} component features an origin which is used to rotate around. This makes it perfect to use for always pointing the stick at the white ball while aiming.
+
+
+
+\section2 Translation transform
+
+For "loading" or "charging" the stick before a shot, we want to visually display the shot intensity by moving/displaycing it away from it's center.\br
+This needs to be done after the rotation is applied, to make sure the stick is always moved on the x-axis first and is then rotated around the z.axis. \br
+So the transform needs to be nested below in the Rectangle:
+
+\qml
+EntityBase {
+        //..
+
+    Rectangle {
+           id: rect
+          //..
+
+           transform: Translate {
+               id: stickCharge
+               x: 0
+           }
+        //..
+    }
+//..
+}
+\endqml
+
+
+    \section2 MouseArea
+
+    In a \c{MouseArea} we rotate around the origin at the tip of the stick. When the user presses the stick, the origin is updated in \c{onPressed}. While the position is changed in
+    \c{onPositionChanged}, the rotation angle is calculated and \c{stickRot.angle} updated. \br
+    \c{mapToItem(stick.parent, mouseX, mouseY)} transfers the mouse coordinates from the stick \c{EntityBase}'s coordinate system to the parent's (\c{Scene}'s) coordinate system.
+
+    \qml
+    EntityBase {
+        //..
+
+        transform: Rotation {
+            id: stickRot
+            angle: 0
+        }
+
+        Rectangle {
+
+            //..
+
+           transform: Translate {
+               id: stickCharge
+               x: 0
+           }
+
+           MouseArea {
+               anchors.fill: parent
+
+               onPressed: {
+                   stickRot.origin.x = stick.rect.width + aimDistance
+                   stickRot.origin.y = stick.rect.height/2
+               }
+
+               onPositionChanged: {
+                   var mouseAbs = mapToItem(stick.parent, mouseX, mouseY)
+                   var angle = - Math.atan2(mouseAbs.x - pointAtCenter.x, mouseAbs.y - pointAtCenter.y) * 180 / Math.PI - 90;
+                   stickRot.angle = angle
+                   //stick.parent.updateAimHelper()
+                }
+
+               onDoubleClicked:
+               {
+                   shooting = true
+                   stickPressedTimer.start()
+               }
+
+               onReleased:
+               {
+                   if(shooting)
+                   {
+                       stick.enabled = false
+                       stickPressedTimer.stop()
+                       stickPressedTimer.decrease = false
+                       shooting = false
+                       stickShootAnimation.running = true
+                       stick.parent.shoot(-stickCharge.x * shootingStrength, stickRot.angle)
+                       stickResetAnimation.running = true
+                       stickCharge.x = 0
+                   }
+
+               }
+           }
+        }
+        //..
+
+    }
+
+\endqml
+
+When the stick is double clicked, a timer is started and \c{shooting = true} is set in \c{onDoubleClicked}. \br \br
+The last important step is the \c{onReleased} callback. We need to know whether the user is aiming or shooting via a double click.
+Here we set \c{stick.enabled = false} to prevent any further user input, stop the timer and set back the variables to the initial state.
+\brYou can also add a shooting animation to the stick "\c{stickShootAnimation}, as described \l {#Cue stick shooting animation} {in here}.
+\br
+By calling \c{ stick.parent.shoot(-stickCharge.x * shootingStrength, stickRot.angle)}, we finally give an impulse to the white ball to perform a shot, as described \l {#Shooting} {here}.
+
+
+\section2 stickPressedTimer
+
+In the \c{onTriggered} callback of the timer, which is called in an \c{interval: 1} ms (every millisecond),
+we increase or decrease \c{stickCharge.x} depending on the \c{chargingSpeed} and if \c{maxCharge} has been reached.
+
+\qml
+EntityBase {
+//..
+    Timer {
+        id: stickPressedTimer
+        interval: 1
+        running: false // don't start running from the beginning, when the scene is loaded
+        repeat: true // otherwise restart wont work
+        property bool decrease: false
+
+        onTriggered: {
+            if(stickCharge.x > -maxCharge && !decrease)
+                stickCharge.x -= chargingSpeed
+            else if(stickCharge.x <= -maxCharge)
+                decrease = true
+
+            if(stickCharge.x < 0 && decrease)
+                stickCharge.x += chargingSpeed
+            else if(stickCharge.x >= 0)
+                decrease = false
+        }
+    }
+//..
+}
+\endqml
+
+
+\section2 function pointStickTo(whiteBall)
+
+The \c{pointAtCenter} is updated from \c{Main.qml} via \c{function pointStickTo(whiteBall)} and it is made sure the stick is always aiming towards the white ball.
+
+
+\qml
+EntityBase {
+    id: stick
+    //..
+
+    Rectangle {
+           id: rect
+           //..
+    }
+
+    function pointStickTo(whiteBall){
+        var center = whiteBall.circleColliderBody.getWorldCenter()
+        stick.pointAtCenter = center
+        stick.x = center.x - stick.rect.width - aimDistance
+        stick.y = center.y - stick.rect.height/2
+        stick.visible = true
+        stick.enabled = true
+        stick.parent.updateAimHelper()
+    }
+
+}
+\endqml
+
+The line \c{stick.parent.updateAimHelper()} is uncommented later, when we add a raycast aim helper in chapter: \l{08-Adding-a-Raycast-to-help-aiming.html} {Adding a Raycast (to help aiming)}
+
+In Main.qml, we add \c{scene.whiteBall = entityManager.getEntityById("whiteBall")} and c\{playingStick.pointStickTo(scene.whiteBall)} after all  balls have been placed of course.
+
+\qml
+        Timer {
+            id: initTimer
+            //..
+            onTriggered: {
+
+                //..
+
+                if(scene.ballPositions.length == 0)
+                {
+                    initTimer.stop()
+                    scene.whiteBall = entityManager.getEntityById("whiteBall")
+                    playingStick.pointStickTo(scene.whiteBall)
+                    //scene.updateAimHelper()
+                }
+            }
+        }
+
+
+\endqml
+
+It should now be possible to aim the stick into any direction:
+
+\image image31.png
+
+\b{When performing a double click to load and shoot, the app wil most likely crash, as we have not added the shooting animation inside the rectangle yet:}
+
+\section1 Shooting
+\section2 Cue stick shooting animation
+
+\qml
+EntityBase {
+    id: stick
+    //..
+
+    Timer {
+        //..
+    }
+
+    Rectangle {
+           id: rect
+           //..
+
+           SequentialAnimation on x {
+                       id: stickShootAnimation
+                       // Animations on properties start running by default
+                       running: false
+                       NumberAnimation { from: 0; to: aimDistance; duration: 100; easing.type: Easing.Linear }
+                   }
+
+           SequentialAnimation on x {
+                       id: stickResetAnimation
+                       // Animations on properties start running by default
+                       running: false
+                       onFinished:
+                       {
+                           stick.visible = false
+                       }
+
+                       NumberAnimation { from: aimDistance; to: 0; duration: 100; easing.type: Easing.BezierSpline }
+                   }
+    }
+
+
+}
+\endqml
+
+
+We simply add 2 \c{SequentialAnimation on x}, which animate the x coordinate of the stick once
+\c{from: 0; to: aimDistance;} and then \c{from: aimDistance; to: 0;} back again in a \c{NumberAnimation} component.
+
+
+\section2 Shooting function
+
+Also it might crash, because we have not defined a shoot function yet, which gives the white ball an impulse.
+In Main.qml, we add:
+
+\qml
+GameWindow {
+    //..
+    Scene {
+            //..
+
+        function rotToVec(angle, amplitude)
+        {
+            return Qt.point(amplitude * Math.cos(angle* (Math.PI/180)), amplitude * Math.sin(angle * (Math.PI/180)))
+        }
+
+
+        function shoot(impulseStrength, angle)
+        {
+            var ball = scene.whiteBall
+            var center = ball.circleColliderBody.getWorldCenter()
+            var vec = scene.rotToVec(angle, impulseStrength)
+            ball.applyLinearImpulse(vec, center)
+            //endRoundTimer.start()
+            //rayCastVisRect.visible = false
+        }
+    //..
+    }
+}
+\endqml
+
+The helper function \c{function rotToVec(angle, amplitude)} converts the \c{stickRot.angle} passed to the \c{shoot} function to a vector wth \c{amplitude},
+in our case \c{-stickCharge.x * shootingStrength} as coded in \l{#MouseArea}. We get the center of the white cue ball via the alias we defined earlier \c{circleColliderBody} and \c{getWorldCenter()} as documented in \l{https://felgo.com/doc/felgo-body/#getWorldCenter-method},
+
+It should now be possible to shoot exactly once:
+
+\image image32.png
+
+
+ \span {class="largeText"} {\b{In order to be able to shoot into a pocket, we will create those in the next chapter:} \l {06-Adding-the-pockets.html} {Adding the pockets}}
 */
 
+
+
+
+
+
+
+
+
+
+
+
+
 /*!
-    \page Adding-the-pockets.html
+    \page 06-Adding-the-pockets.html
     \title Adding the pockets
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
+    To simplify things, we just add pockets by leaving gaps between our walls!
+
+    \section1 Updating Wall.qml
+
+    We update our \c{Wall.qml} and remove the Rectangle component from inside, as we want to color each wall individually in our Main.qml later.
+
+    \qml
+EntityBase {
+    entityType: "wall"
+
+    property alias collider: collider
+
+    BoxCollider {
+        id: collider
+        anchors.fill: parent
+        bodyType: Body.Static // the body shouldnt move
+        friction: 0
+        restitution: 1
+
+        fixture.onBeginContact: collidedWithBox()
+    }
+}
+\endqml
+
+We also remove the alias for the rectangle of course and the callback \c{fixture.onBeginContact: collidedWithBox()} as well as the corresponding signal.
+We end up with a simle EntityBase containign a box collider.
+
+\br
+
+The goal for our walls (and pockets inbetween) is to look like this:
+
+\image image33.png
+
+\section1 Styling and placing the walls in Main.qml
+
+Inside our Main.qml we now remove the 4 old Wall components and add the new ones, whichis quite a bit of code:
+
+\qml
+GameWindow {
+    //..
+
+    Scene {
+    //..
+        Wall {
+            // bottom wall 1
+            id: bottomWallOne
+            height: scene.wallHeight
+            width: (scene.width / 2) - scene.pocketSizeDiameter * 1.5 - scene.tableEdge
+            x: scene.pocketSizeDiameter + scene.tableEdge
+            y: scene.height - scene.wallHeight - scene.tableEdge
+
+            Rectangle{
+                anchors.fill: parent
+                radius: scene.pocketSizeDiameter/2
+                gradient: Gradient
+                {
+                    GradientStop { position: 0.0; color: "brown" }
+                    GradientStop { position: 1.0; color: "#361B0C" }
+                }
+            }
+        }
+
+        Wall {
+            // bottom wall 2
+            height: scene.wallHeight
+            width: (scene.width / 2) - scene.pocketSizeDiameter * 1.6 - scene.tableEdge
+            x: scene.pocketSizeDiameter * 2 + bottomWallOne.width + scene.tableEdge
+            y: scene.height - scene.wallHeight - scene.tableEdge
+            Rectangle
+            {
+                anchors.fill: parent
+                radius: scene.pocketSizeDiameter/2
+                gradient: Gradient
+                {
+                    GradientStop { position: 0.0; color: "brown" }
+                    GradientStop { position: 1.0; color: "#361B0C" }
+                }
+            }
+        }
+
+        Wall {
+            // left wall
+            id: leftWall
+            width: scene.wallHeight
+            height: scene.height - scene.pocketSizeDiameter * 1.6 - scene.tableEdge * 2  - scene.wallHeight * 2
+            y: scene.pocketSizeDiameter + scene.tableEdge + scene.wallHeight
+            x: scene.wallHeight
+            Rectangle
+            {
+                anchors.fill: parent
+                radius: scene.pocketSizeDiameter/2
+                gradient: Gradient
+                {
+                    GradientStop { position: 0.0; color: "brown";  }
+                    GradientStop { position: 1.0; color: "#361B0C" }
+                }
+            }
+        }
+
+        Wall {
+            // right wall
+            width: scene.wallHeight
+            height: scene.height - scene.pocketSizeDiameter * 1.5 - scene.tableEdge * 2 - scene.wallHeight * 2
+            y: scene.pocketSizeDiameter + scene.tableEdge + scene.wallHeight
+            x: scene.width - scene.wallHeight - scene.tableEdge
+            Rectangle{
+                anchors.fill: parent
+                radius: scene.pocketSizeDiameter/2
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#361B0C" }
+                    GradientStop { position: 1.0; color: "brown" }
+                }
+
+            }
+        }
+
+
+        Wall {
+            id: topWallOne
+            height: scene.wallHeight
+            width: (scene.width / 2) - scene.pocketSizeDiameter * 1.5 - scene.tableEdge
+            x: scene.pocketSizeDiameter + scene.tableEdge
+            y: scene.wallHeight + scene.tableEdge
+            Rectangle{
+                anchors.fill: parent
+                radius: scene.pocketSizeDiameter/2
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#361B0C" }
+                    GradientStop { position: 1.0; color: "brown" }
+                }
+
+            }
+        }
+
+        Wall {
+            id: topWallTwo
+            height: scene.wallHeight
+            width: (scene.width / 2) - scene.pocketSizeDiameter * 1.5 - scene.tableEdge
+            x: scene.pocketSizeDiameter * 2 + bottomWallOne.width + scene.tableEdge
+            y: scene.wallHeight + scene.tableEdge
+            Rectangle{
+                anchors.fill: parent
+                radius: scene.pocketSizeDiameter/2
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#361B0C" }
+                    GradientStop { position: 1.0; color: "brown" }
+                }
+
+            }
+        }
+    //..
+    }
+//..
+}
+\endqml
+
+\section2 Placement
+
+The difference between those wall segments lies in the setting of \c{width, height, x and y} as you should be able to see.
+We use our properties
+\list
+\li \c{scene.width}
+\li \c{scene.height}
+\li \c{scene.wallHeight}
+\li \c{scene.pocketSizeDiameter}
+\li \c{scene.tableEdge}
+\endlist
+
+to position and scale the Rectangle component of each wall.
+
+
+\section2 Styling
+
+For the wall colors we simply use a linear Gradient:
+
+\qml
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#361B0C" }
+                    GradientStop { position: 1.0; color: "brown" }
+                }
+\endqml
+
+
+The game now should look like this, which is almost the final look!
+
+\image image34.png
+
+ \span {class="largeText"} {\b{The last step to make it playable is: \l {07-Adding-game-logic-and-display-text.html} {Adding game logic and display text}}
 */
 
+
+
+
+
+
+
+
+
+
+
+
 /*!
-    \page Adding-game-logic-and-display-text.html
+    \page 07-Adding-game-logic-and-display-text.html
     \title Adding game logic and display text
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
 
+In this final chapter we add more game logic, for counting the score, removing balls that wer shot into holes, resetting the stick after a round
+has been played and more. We add status text to display the score and a GameOver scene! Let's go.
+
+\section1 Adding endRoundTimer
+
+Inside Main.qml, we add a new timer which is needed to repeatedly check if a round has ended. This is done in the \c{onTriggered} callback
+via the \c{scene.updateAfterShoot()} function.
+
+\qml
+GameWindow {
+   //..
+
+    Scene {
+        //..
+
+        Timer {
+            id: initTimer
+            //..
+        }
+
+        Timer {
+            id: endRoundTimer
+            interval: 50
+            running: false // start running from the beginning, when the scene is loaded
+            repeat: true // otherwise restart wont work
+
+            property var velocityQueue: []
+
+            onTriggered: {
+                scene.updateAfterShoot()
+            }
+        }
+
+        //..
+
+    }
+
+    //..
+}
+\endqml
+
+
+\section2 updateAfterShoot()
+
+\qml
+GameWindow {
+   //..
+
+    Scene {
+        //..
+        function updateAfterShoot()
+        {
+            var whiteBall = entityManager.getEntityById("whiteBall")
+            var velX = whiteBall.velocity.x
+            var velY = whiteBall.velocity.y
+
+            var velQueue = endRoundTimer.velocityQueue
+            velQueue.push(Math.abs(velX) + Math.abs(velY))
+            if(velQueue.length > 3)
+                velQueue.shift()
+
+            var balls = entityManager.getEntityArrayByType("ball")
+            for (let i = 0; i < balls.length; i++)
+            {
+                var ball = balls[i]
+                var ballNum = ball.ballNumber
+                if(scene.isBallinHole(ball))
+                {
+                    //one of the playing balls went into a hole
+                    if(ballNum !== 0 && ballNum !== 8){
+                        if(ballNum < 8)
+                        {
+                            playerOneScoreText.updateScore(1)
+                        }
+                        else
+                        {
+                            playerTwoScoreText.updateScore(1)
+                        }
+                    }
+                    else //white or black ball went into a hole
+                    {
+                        scene.gameOver()
+                    }
+
+                    ball.circleColliderBody.active = false
+                    ball.enabled = false
+                    entityManager.removeEntityById(ball.entityId)
+                    balls.splice(i, 1)
+                }
+            }
+
+            //white ball doesnt move anymore - reset stick, end round and change player
+            if(velQueue.reduce((a, b) => a + b, 0) === 0)
+            {
+                playingStick.pointStickTo(whiteBall)
+                endRoundTimer.stop()
+            }
+        }
+
+    //..
+    }
+
+    //..
+}
+\endqml
+
+In this function, which is called every 50ms by the timer, we want to detect whether the game is ready for a new round but also if any of the balls
+were shot into a hole, which would increase the score!
+\br
+
+\section3 Checking the white balls velocity
+
+While the latter is quite straightforward, the former requires a bit of thinking. The round should be over, once the white bal has stopped moving at all,
+in order to be able to reposition the cue stick and let the next turn start. To do this, we implement an array which is used as a queue \br \c{var velQueue = endRoundTimer.velocityQueue}
+that is updated with new velocity values from the white cue ball in (\c{velQueue.push(Math.abs(velX) + Math.abs(velY))}
+and shift to the right when it is full (3 array members):
+
+\code
+            if(velQueue.length > 3)
+                velQueue.shift()
+\endcode
+
+We get the white ball's velocity via the alias "velocity" we added \l{file:///D:/GameAssignment/Felgo8BallPool/doc/html/02-creating-the-balls.html#adding-basic-properties} {here}
+\br
+At the end of the function, we update the cue stick and end the timer when all of the velocity values in the array are 0, meaining that the ball
+has not moved for more than 150ms (3 + 50ms, the timer interval)
+
+\code
+            //white ball doesnt move anymore - reset stick, end round and change player
+            if(velQueue.reduce((a, b) => a + b, 0) === 0)
+            {
+                playingStick.pointStickTo(whiteBall)
+                endRoundTimer.stop()
+            }
+\endcode
+
+A higher value than 3 might be needed when dealing with more complicated or faster collisions, as the velocity of the white ball can be
+0 for a short amount of time when colliding with another ball or whall.
+
+\section3 Checking for a score
+
+Inbetween those code segments above, we check if any ball went into a hole. We do this by iterating over all ball entities and calling \c{if(scene.isBallinHole(ball))} for each one:
+
+\qml
+GameWindow {
+   //..
+
+    Scene {
+        //..
+
+        function isBallinHole(ball)
+        {
+            var center = ball.circleColliderBody.getWorldCenter()
+            var holeDistance = scene.tableEdge + scene.wallHeight
+            if(center.x < holeDistance || center.x > scene.width - holeDistance
+                    || center.y < holeDistance || center.y > scene.height - holeDistance)
+            {
+                return true
+            }
+            return false
+        }
+    //..
+    }
+
+    //..
+}
+\endqml
+
+In here, we again get the center of the ball and check wheather it is outside of the playing field.
+
+\section3 Increasing the score and removing a ball
+
+If this is the case, above function returns true and we increase the corresponding score (either for the full or the half ones.
+See \l{playerScore} for more.
+\br
+We also remove the ball from the array, from the entityManager and disable its collider and enabled property.
+
+
+\section2 playerScore
+
+We add a variable for the score inside the game window:
+
+\qml
+GameWindow {
+    id: gameWindow
+    activeScene: scene
+
+    property var playerScore: [0, 0]
+
+//..
+}
+\endqml
+
+And 2 Text components inside our scene:
+
+\qml
+GameWindow {
+   //..
+
+    Scene {
+        //..
+
+        Text {
+            id: playerOneScoreText
+            color: "white"
+            font.pixelSize: scene.wallHeight * 0.7
+            anchors.left: topWallOne.left
+            z: 200 // put on top of everything else in the Scene
+
+            function updateScore(add)
+            {
+                gameWindow.playerScore[0] += add
+                playerOneScoreText.text = "    Scored Solid Balls (1-7): " + gameWindow.playerScore[0]
+            }
+        }
+
+
+        Text {
+            id: playerTwoScoreText
+            color: "white"
+            font.pixelSize: scene.wallHeight * 0.7
+            anchors.right: topWallTwo.right
+            x: -scene.pocketSizeDiameter
+            z: 200 // put on top of everything else in the Scene
+
+            function updateScore(add)
+            {
+                gameWindow.playerScore[1] += add
+                playerTwoScoreText.text = "Scored Striped Balls (9-15): " + gameWindow.playerScore[1] + "    "
+            }
+        }
+    //..
+    }
+
+    //..
+}
+\endqml
+
+As you can see, we again use the variables we defined earlier for placement and scaling of the text. Each Text component then also
+has a function \c{updateScore(add)} which is called from inside the \l{updateAfterShoot()} function.
+
+We now need to uncomment the line
+
+\code
+endRoundTimer.start()
+\endcode
+
+inside \c{function shoot(impulseStrength, angle)}, and add/uncomment these 3 lines:
+
+\code
+            //init score
+            gameWindow.playerScore = [0, 0]
+            playerOneScoreText.updateScore(0)
+            playerTwoScoreText.updateScore(0)
+\endcode
+
+to the end of our \c{generateBallPositions()} function, which was explained \l{generateBallPositions() function} {here}!
+
+A score should now be visible and updated if a ball is shot into a pocket!
+
+\image image35.png
+
+We are almost done.
+
+\section1 Game Over
+
+When all full or half ones plus the black 8 have been scored, OR a player shoots the cue ball or black 8 into a pocket (too early), the game ends.
+
+\section2 gameOverScene
+For this, we implement a game over scene that simply displays the final score:
+
+\qml
+GameWindow {
+    //..
+
+    Scene {
+        id: gameOverScene
+        anchors.fill: parent
+        enabled: false
+        visible: false
+
+            onVisibleChanged:
+            {
+                gameOverText.text = "Game Over! - Final Score:\nScored Solid Balls (1-7):\n" + gameWindow.playerScore[0] + "\n" +
+                        "Scored Striped Balls (9-15):\n" + gameWindow.playerScore[1]
+            }
+
+        Rectangle{
+            color: "transparent"
+            anchors.fill: parent
+
+            Text {
+                id: gameOverText
+                font.pixelSize: scene.wallHeight
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.centerIn: parent
+                color: "white"
+                z:1
+            }
+
+            MouseArea {
+                anchors.fill: parent
+
+                onReleased:
+                {
+                    scene.ballPositions = []
+                    gameWindow.playerScore = [0, 0]
+                    scene.whiteBall = null
+                    scene.generateBallPositions()
+                    gameOverScene.enabled = false
+                    gameOverScene.visible = false
+                    gameWindow.activeScene = scene
+                    scene.enabled = true
+                    scene.visible = true
+                    initTimer.start()
+                }
+            }
+        }
+    }
+
+    //..
+}
+\endqml
+
+This scene is disabled and invisible from the start and only turned on later in the \c{gameOver()} function. It features a text component that is updated in the \c{onVisibleChanged} callback of the scene. \br
+When the user clicks/tabs the screen anywhere, the MouseArea component cathes this in the \c{onReleased} callback and resets evereything neccessary for the game to restart.
+
+\image image36.png
+\caption The game over screen
+
+\section2 gameOver() function
+
+The gameOver() function simply stops the endRoundTimer, resets the current ball number, cue stick rotation, removes all balls via the \l{clearAllBalls(balls) function} and sets the \l{gameOverScene} as the active scene,
+while hiding and disabling the current scene:
+
+\qml
+GameWindow {
+   //..
+
+    Scene {
+        //..
+
+        function gameOver()
+        {
+            endRoundTimer.stop()
+            initTimer.curBallNum = 0
+            playingStick.stickRotAngle = 0
+            scene.clearAllBalls(entityManager.getEntityArrayByType("ball"))
+            gameWindow.activeScene = gameOverScene
+            gameOverScene.enabled = true
+            gameOverScene.visible = true
+            scene.enabled = false
+            scene.visible = false
+        }
+    //..
+    }
+
+    //..
+}
+\endqml
+
+\section2 clearAllBalls(balls) function
+
+This helper function disableds and removes all ball entities:
+
+\qml
+GameWindow {
+   //..
+
+    Scene {
+        //..
+
+        function clearAllBalls(balls)
+        {
+            for (let u = 0; u < balls.length; u++)
+            {
+                balls[u].circleColliderBody.active = false
+                balls[u].removeEntity()
+                balls.splice(u, 1)
+            }
+            var toRemoveEntityTypes = ["ball"];
+            entityManager.removeEntitiesByFilter(toRemoveEntityTypes);
+        }
+    //..
+    }
+
+    //..
+}
+
+\endqml
+
+ \span {class="largeText"} {\b{The game should now be fully playable in multiple rounds as long as you wish! :)\br
+Because aiming can be hard, there is a bonus chapter on how to add a aiming ray: \l {08-Adding-a-Raycast-to-help-aiming.html} {Adding a Raycast (to help aiming)}}
 */
 
+
 /*!
-    \page Adding-a-Raycast-to-help-aiming.html
-    \title Adding a Raycast to help aiming
+    \page 08-Adding-a-Raycast-to-help-aiming.html
+    \title Bonus: Adding a Raycast to help aiming
 
     \div {class="main-rounded"}
         \div {div class="navigationbar"}
             \list
-            \l {Introduction-and-Setup.html} {Back to Start}
+            \l {01-Introduction-and-Setup.html} {Back to Start}
             \endlist
         \enddiv
     \enddiv
+
+In this Bonus chapter the code for a raycast and Rectangle that displays a corresponding white line is given:
+
+\qml
+import Felgo 4.0 // for the gaming components
+import QtQuick 2.0 // for the Image element
+import QtQuick.Controls //for the Button
+import "entities"
+
+GameWindow {
+   //..
+
+    Scene {
+        id: scene
+
+        //..
+
+        //show the ray that is being cast as a rectangle
+        Rectangle {
+            id: rayCastVisRect
+            transformOrigin: Item.Left
+            visible: false
+            antialiasing: true
+
+            property point from
+            property point to
+
+            onToChanged: {
+                width = Math.abs(Math.hypot(from.x - to.x, from.y - to.y))
+            }
+
+            width: scene.width
+            height: 1
+            color: "white"
+        }
+
+
+        RayCast {
+            id: raycast
+            maxFraction: scene.width
+            onFixtureReported: (fixture, contactPoint, contactNormal, fraction) =>
+                               {
+                                   maxFraction = fraction // cancel current raycast, report no more objects
+                                   rayCastVisRect.to = contactPoint
+                               }
+        }
+
+//..
+        function updateAimHelper()
+        {
+            console.log("update aim")
+            var center = scene.whiteBall.circleColliderBody.getWorldCenter()
+            var from = Qt.point(center.x, center.y)
+            var rotVec = scene.rotToVec(playingStick.stickRotAngle, 1)
+            var to = Qt.point(from.x + rotVec.x, from.y + rotVec.y)
+
+            rayCastVisRect.from = from
+            rayCastVisRect.x = from.x
+            rayCastVisRect.y = from.y
+            rayCastVisRect.rotation = playingStick.stickRotAngle
+
+            raycast.maxFraction = scene.width
+            physicsWorld.rayCast(raycast, from, to)
+            physicsWorld.rayCast(raycast, from, to)
+
+            rayCastVisRect.visible = true
+        }
+
+       //..
+    }
+
+   //..
+}
+
+\endqml
+
+\image image37.png
+
+ \span {class="largeText"} {\b{Congratulations! You are done. \br Go back to start: \l {01-Introduction-and-Setup.html} {Introduction and Setup}}
 
 */
