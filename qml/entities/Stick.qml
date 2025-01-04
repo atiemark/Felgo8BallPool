@@ -12,6 +12,7 @@ EntityBase {
         angle: 0
     }
 
+
     property real stickDiameter
     property real ballDiameter
 
@@ -49,82 +50,89 @@ EntityBase {
         }
     }
 
-    Rectangle {
-           id: rect
-           z: 100
-           height: stickDiameter
-           width: stick.stickImgWidthPx * (stickDiameter / stick.stickImgHeightPx)
-           color: "transparent"
-
-           transform: Translate {
-               id: stickCharge
-               x: 0
-           }
+    Rectangle
+    {
+        id: parentRect
+        height: stickDiameter * 10
+        width: stick.stickImgWidthPx * (stickDiameter / stick.stickImgHeightPx) * 1.5
+        color: "transparent"
+        anchors.bottom: parent.top
+        anchors.bottomMargin: -height/2 - stickDiameter/2
 
 
-           MouseArea {
-               anchors.fill: parent
+        MouseArea {
+            anchors.fill: parent
 
-               onPressed: {
-                   stickRot.origin.x = stick.rect.width + aimDistance
-                   stickRot.origin.y = stick.rect.height/2
-               }
+            onPressed: {
+                stickRot.origin.x = stick.rect.width + aimDistance
+                stickRot.origin.y = stick.rect.height/2
 
-               onPositionChanged: {
-                   var mouseAbs = mapToItem(stick.parent, mouseX, mouseY)
-                   var angle = - Math.atan2(mouseAbs.x - pointAtCenter.x, mouseAbs.y - pointAtCenter.y) * 180 / Math.PI - 90;
-                   stickRot.angle = angle
-                   stick.parent.updateAimHelper()
+                if(shooting)
+                {
+                    stick.enabled = false
+                    stickPressedTimer.stop()
+                    stickPressedTimer.decrease = false
+                    shooting = false
+                    stickShootAnimation.running = true
+                    stick.parent.shoot(-stickCharge.x * shootingStrength, stickRot.angle)
+                    stickResetAnimation.running = true
+                    stickCharge.x = 0
                 }
+            }
 
-               onDoubleClicked:
-               {
-                   shooting = true
-                   stickPressedTimer.start()
+            onPositionChanged: {
+                var mouseAbs = mapToItem(stick.parent, mouseX, mouseY)
+                var angle = - Math.atan2(mouseAbs.x - pointAtCenter.x, mouseAbs.y - pointAtCenter.y) * 180 / Math.PI - 90;
+                stickRot.angle = angle
+                stick.parent.updateAimHelper()
+             }
+
+            onDoubleClicked:
+            {
+                shooting = true
+                stickPressedTimer.start()
+            }
+        }
+
+        Rectangle {
+               id: rect
+               z: 100
+               height: stickDiameter
+               width: stick.stickImgWidthPx * (stickDiameter / stick.stickImgHeightPx)
+               color: "transparent"
+               anchors.verticalCenter: parentRect.verticalCenter
+
+               transform: Translate {
+                   id: stickCharge
+                   x: 0
                }
 
-               onReleased:
-               {
-                   if(shooting)
-                   {
-                       stick.enabled = false
-                       stickPressedTimer.stop()
-                       stickPressedTimer.decrease = false
-                       shooting = false
-                       stickShootAnimation.running = true
-                       stick.parent.shoot(-stickCharge.x * shootingStrength, stickRot.angle)
-                       stickResetAnimation.running = true
-                       stickCharge.x = 0
-                   }
-
-               }
-           }
-
-           SequentialAnimation on x {
-                       id: stickShootAnimation
-                       // Animations on properties start running by default
-                       running: false
-                       NumberAnimation { from: 0; to: aimDistance; duration: 100; easing.type: Easing.Linear }
-                   }
-
-           SequentialAnimation on x {
-                       id: stickResetAnimation
-                       // Animations on properties start running by default
-                       running: false
-                       onFinished:
-                       {
-                           stick.visible = false
+               SequentialAnimation on x {
+                           id: stickShootAnimation
+                           // Animations on properties start running by default
+                           running: false
+                           NumberAnimation { from: 0; to: aimDistance; duration: 100; easing.type: Easing.Linear }
                        }
 
-                       NumberAnimation { from: aimDistance; to: 0; duration: 100; easing.type: Easing.BezierSpline }
-                   }
+               SequentialAnimation on x {
+                           id: stickResetAnimation
+                           // Animations on properties start running by default
+                           running: false
+                           onFinished:
+                           {
+                               stick.visible = false
+                           }
 
-           Image {
-               id: image
-               source: Qt.resolvedUrl("../../assets/img/stick.png")
-               // set the size of the image to the one of the collider and not vice versa, because the physics properties depend on the collider size
-               anchors.fill: rect
-           }
+                           NumberAnimation { from: aimDistance; to: 0; duration: 100; easing.type: Easing.BezierSpline }
+                       }
+
+               Image {
+                   id: image
+                   source: Qt.resolvedUrl("../../assets/img/stick.png")
+                   // set the size of the image to the one of the collider and not vice versa, because the physics properties depend on the collider size
+                   anchors.fill: rect
+               }
+        }
     }
 
 
